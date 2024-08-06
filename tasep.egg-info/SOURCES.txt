@@ -1,0 +1,6 @@
+setup.py
+tasep.egg-info/PKG-INFO
+tasep.egg-info/SOURCES.txt
+tasep.egg-info/dependency_links.txt
+tasep.egg-info/not-zip-safe
+tasep.egg-info/top_level.txt

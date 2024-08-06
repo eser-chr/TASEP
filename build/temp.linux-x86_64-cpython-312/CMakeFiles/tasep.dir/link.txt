@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -DVERSION_INFO=\"0.1\" -O3 -DNDEBUG -flto -shared  -o /home/chris/Desktop/TASEP/build/lib.linux-x86_64-cpython-312/tasep.cpython-312-x86_64-linux-gnu.so CMakeFiles/tasep.dir/binding_cooperative_tasep.cpp.o CMakeFiles/tasep.dir/cooperative_tasep.cpp.o 

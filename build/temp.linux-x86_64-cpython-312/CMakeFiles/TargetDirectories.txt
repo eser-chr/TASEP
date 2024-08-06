@@ -1,0 +1,3 @@
+/home/chris/Desktop/TASEP/build/temp.linux-x86_64-cpython-312/CMakeFiles/tasep.dir
+/home/chris/Desktop/TASEP/build/temp.linux-x86_64-cpython-312/CMakeFiles/edit_cache.dir
+/home/chris/Desktop/TASEP/build/temp.linux-x86_64-cpython-312/CMakeFiles/rebuild_cache.dir
