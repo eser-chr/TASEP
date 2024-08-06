@@ -84,7 +84,11 @@ public:
     void bind(int side)override;
     void simulation()override;
 
+/*
+Returns 
+DATA, ACTIVATION, nearest_neighbor, TIMES, res, dts
 
+ */
 std::tuple< std::vector<std::vector<int>>, 
             std::vector<std::vector<int>>, 
             std::vector<std::vector<int>>, 
