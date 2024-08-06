@@ -1,7 +1,0 @@
-binding_cooperative_tasep.cpp
-cooperative_tasep.cpp
-setup.py
-cooperative_tasep_lib.egg-info/PKG-INFO
-cooperative_tasep_lib.egg-info/SOURCES.txt
-cooperative_tasep_lib.egg-info/dependency_links.txt
-cooperative_tasep_lib.egg-info/top_level.txt
