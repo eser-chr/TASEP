@@ -223,6 +223,7 @@ void SpecificCooperativeTasep::simulation(){
 std::tuple< std::vector<std::vector<int>>,             
             std::vector<double>          
             > CooperativeTasep::get_results(){
+                std::cout<<std::flush;
                 return std::make_tuple(DATA, TIMES);
                 // return std::make_tuple(DATA, ACTIVATION, TIMES, res, dts);
             }
@@ -235,6 +236,7 @@ std::tuple< std::vector<std::vector<int>>,
             std::vector<int>,
             std::vector<double> 
             > SpecificCooperativeTasep::get_results(){
+                std::cout<<std::flush;
                 return std::make_tuple(DATA, ACTIVATION, nearest_neighbor, TIMES, res, dts);
             }
 
