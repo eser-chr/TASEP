@@ -1,6 +1,7 @@
 #ifndef COOP_TASEP
 #define COOP_TASEP
 
+#include "timer.hpp"
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
@@ -94,7 +95,8 @@ public:
   void simulation();
   void printme();
   // std::tuple<std::vector<uint8_t>, std::vector<DATATYPE>> get_trajectory();
-  // std::tuple<std::vector<uint8_t>, std::vector<DATATYPE>, std::vector<u_int8_t>,
+  // std::tuple<std::vector<uint8_t>, std::vector<DATATYPE>,
+  // std::vector<u_int8_t>,
   //            std::vector<uint16_t>>
   // get_trajectory();
 
@@ -102,6 +104,7 @@ public:
   std::vector<DATATYPE> TIMES;
   std::vector<uint8_t> ACTION;
   std::vector<uint16_t> SIDE;
+
 protected:
   int L;
   int ITERS;
@@ -128,7 +131,6 @@ protected:
   const int r_ghost = 2;
   const int ghost = l_ghost + r_ghost;
   const int N_actions = 4;
-
 
 private:
   void bind(int side);

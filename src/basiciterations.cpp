@@ -1,4 +1,5 @@
 #include "cooperative_tasep.h"
+#include "timer.hpp"
 
 #ifdef DEBUG
 #define ASSERT(condition) assert(condition)
@@ -12,9 +13,14 @@ tasep::BasicIteration::BasicIteration(int L, int ITERS, DATATYPE kon,
     : L(L), ITERS(ITERS), kon(kon), koff(koff), kstep(kstep), q(q), kq(kq),
       gen(std::random_device{}()), dis(0.0, 1.0) {
 
+
   grid.resize(L + ghost, 0);
   propensities.resize(N_actions * (L + ghost), 0.0);
   sum_propensities.resize(N_actions * (L + ghost), 0.0);
+  DATA.resize(L * ITERS);
+  TIMES.resize(ITERS);
+  ACTION.resize(ITERS);
+  SIDE.resize(ITERS);
 
   for (int i = l_ghost * N_actions + BIND;
        i < propensities.size() - r_ghost * N_actions; i += N_actions) {
@@ -37,12 +43,9 @@ tasep::BasicIteration::BasicIteration(int L, int ITERS, DATATYPE kon,
   }
   std::cout << std::endl;
 #endif
-
-  DATA.resize(L * ITERS);
-  TIMES.resize(ITERS);
-  ACTION.resize(ITERS);
-  SIDE.resize(ITERS);
 }
+
+// --------------------------------------------------------------------------
 
 void tasep::BasicIteration::printme() {
   std::cout << "kon: " << kon << "\n";
@@ -158,7 +161,7 @@ void tasep::BasicIteration::append_trajectory() {
             DATA.begin() + _iter * L);
   TIMES[_iter] = time;
   ACTION[_iter] = static_cast<u_int8_t>(_action);
-  SIDE[_iter] = static_cast<u_int16_t>(_side-l_ghost);
+  SIDE[_iter] = static_cast<u_int16_t>(_side - l_ghost);
 };
 
 void tasep::BasicIteration::simulation() {
@@ -170,7 +173,8 @@ void tasep::BasicIteration::simulation() {
   }
 }
 
-// std::tuple<std::vector<uint8_t>, std::vector<DATATYPE>, std::vector<u_int8_t>,
+// std::tuple<std::vector<uint8_t>, std::vector<DATATYPE>,
+// std::vector<u_int8_t>,
 //            std::vector<uint16_t>>
 // tasep::BasicIteration::get_trajectory() {
 //   std::cout << std::flush;

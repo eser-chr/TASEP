@@ -1,11 +1,11 @@
 #include "cooperative_tasep.h"
+#include "timer.hpp"
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
 using namespace std;
 namespace py = pybind11;
-
 
 template <typename T>
 py::array_t<T> vector_to_numpy(const std::vector<T> &&vec) {
@@ -15,7 +15,6 @@ py::array_t<T> vector_to_numpy(const std::vector<T> &&vec) {
   std::move(vec.begin(), vec.end(), result_ptr);
   return result;
 }
-
 
 template <typename T>
 py::array_t<T> vector_to_numpy(const std::vector<T> &&vec, size_t rows,
@@ -76,9 +75,8 @@ py::array_t<T> vector_to_numpy(const std::vector<T> &&vec, size_t rows,
 // py::tuple basic_tasep_sim(int L, double T, double kon, double koff,
 //                           double kstep, double q, double kq, bool trajectory,
 //                           bool details, double period) {
-//   tasep::Basic sim(L, T, kon, koff, kstep, q, kq, trajectory, details, period);
-//   sim.simulation();
-//   if (trajectory && details) {
+//   tasep::Basic sim(L, T, kon, koff, kstep, q, kq, trajectory, details,
+//   period); sim.simulation(); if (trajectory && details) {
 //     auto traj = sim.get_trajectory();
 //     auto details = sim.get_details();
 //     auto &data = get<0>(traj);
@@ -103,32 +101,46 @@ py::array_t<T> vector_to_numpy(const std::vector<T> &&vec, size_t rows,
 //     throw std::runtime_error("You need some analytics");
 //   }
 // }
-
+#ifdef TIME_ME
 py::tuple iter_sim(int L, int ITERS, double kon, double koff, double kstep,
                    double q, double kq, bool verbose = false) {
+  double t1, t2, t3;
+  MyTimer timer1{};
   tasep::BasicIteration sim(L, ITERS, kon, koff, kstep, q, kq);
+  t1 = timer1.get();
+
   if (verbose) {
     sim.printme();
   }
+  MyTimer timer2{};
   sim.simulation();
+  t2 = timer2.get();
 
-  // auto traj = sim.get_trajectory();
-  // auto &data = get<0>(traj);
+  MyTimer timer3{};
+  const auto &to_rtn =
+      py::make_tuple(vector_to_numpy(std::move(sim.DATA), ITERS, L),
+                     vector_to_numpy(std::move(sim.TIMES)),
+                     vector_to_numpy(std::move(sim.ACTION)),
+                     vector_to_numpy(std::move(sim.SIDE)));
+  t3 = timer3.get();
 
-  return py::make_tuple(vector_to_numpy(std::move(sim.DATA), ITERS, L),
+  std::cout << "times: " << t1 << "," << t2 << "," << t3 << std::endl;
+  return to_rtn;
+}
+#else
+py::tuple iter_sim(int L, int ITERS, double kon, double koff, double kstep,
+                   double q, double kq, bool verbose = false) {
+  tasep::BasicIteration sim(L, ITERS, kon, koff, kstep, q, kq);
+  if (verbose) sim.printme();
+  sim.simulation();
+  return py::make_tuple(
+    vector_to_numpy(std::move(sim.DATA), ITERS, L),
                         vector_to_numpy(std::move(sim.TIMES)),
                         vector_to_numpy(std::move(sim.ACTION)),
-                        vector_to_numpy(std::move(sim.SIDE)));
-  
-  // return py::make_tuple(vector_to_numpy(std::move(data), data.size() / L, L),
-  //                       vector_to_numpy(std::move(get<1>(traj))),
-  //                       vector_to_numpy(std::move(get<2>(traj))),
-  //                       vector_to_numpy(std::move(get<3>(traj))));
-  // // return py::make_tuple(vector_to_numpy(data, data.size() / L, L),
-  //                       vector_to_numpy(get<1>(traj)),
-  //                       vector_to_numpy(get<2>(traj)),
-  //                       vector_to_numpy(get<3>(traj)));
+                        vector_to_numpy(std::move(sim.SIDE))
+                        );
 }
+#endif
 
 PYBIND11_MODULE(tasep, m) {
   // m.def("sim", &cooperative_tasep_sim, "A function to run the simulation");
