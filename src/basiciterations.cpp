@@ -170,16 +170,16 @@ void tasep::BasicIteration::simulation() {
   }
 }
 
-std::tuple<std::vector<uint8_t>, std::vector<DATATYPE>, std::vector<u_int8_t>,
-           std::vector<uint16_t>>
-tasep::BasicIteration::get_trajectory() {
-  std::cout << std::flush;
-  std::vector<u_int8_t> action_subvector(
-      std::make_move_iterator(ACTION.begin() + 1),
-      std::make_move_iterator(ACTION.end()));
-  std::vector<u_int16_t> side_subvector(
-      std::make_move_iterator(SIDE.begin() + 1),
-      std::make_move_iterator(SIDE.end()));
+// std::tuple<std::vector<uint8_t>, std::vector<DATATYPE>, std::vector<u_int8_t>,
+//            std::vector<uint16_t>>
+// tasep::BasicIteration::get_trajectory() {
+//   std::cout << std::flush;
+//   std::vector<u_int8_t> action_subvector(
+//       std::make_move_iterator(ACTION.begin() + 1),
+//       std::make_move_iterator(ACTION.end()));
+//   std::vector<u_int16_t> side_subvector(
+//       std::make_move_iterator(SIDE.begin() + 1),
+//       std::make_move_iterator(SIDE.end()));
 
-  return std::make_tuple(DATA, TIMES, action_subvector, side_subvector);
-};
+//   return std::make_tuple(DATA, TIMES, action_subvector, side_subvector);
+// };

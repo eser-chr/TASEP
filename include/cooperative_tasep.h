@@ -94,10 +94,14 @@ public:
   void simulation();
   void printme();
   // std::tuple<std::vector<uint8_t>, std::vector<DATATYPE>> get_trajectory();
-  std::tuple<std::vector<uint8_t>, std::vector<DATATYPE>, std::vector<u_int8_t>,
-             std::vector<uint16_t>>
-  get_trajectory();
+  // std::tuple<std::vector<uint8_t>, std::vector<DATATYPE>, std::vector<u_int8_t>,
+  //            std::vector<uint16_t>>
+  // get_trajectory();
 
+  std::vector<uint8_t> DATA;
+  std::vector<DATATYPE> TIMES;
+  std::vector<uint8_t> ACTION;
+  std::vector<uint16_t> SIDE;
 protected:
   int L;
   int ITERS;
@@ -125,10 +129,6 @@ protected:
   const int ghost = l_ghost + r_ghost;
   const int N_actions = 4;
 
-  std::vector<uint8_t> DATA;
-  std::vector<DATATYPE> TIMES;
-  std::vector<uint8_t> ACTION;
-  std::vector<uint16_t> SIDE;
 
 private:
   void bind(int side);

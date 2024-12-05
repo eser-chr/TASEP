@@ -112,14 +112,19 @@ py::tuple iter_sim(int L, int ITERS, double kon, double koff, double kstep,
   }
   sim.simulation();
 
-  auto traj = sim.get_trajectory();
-  auto &data = get<0>(traj);
+  // auto traj = sim.get_trajectory();
+  // auto &data = get<0>(traj);
 
-  return py::make_tuple(vector_to_numpy(std::move(data), data.size() / L, L),
-                        vector_to_numpy(std::move(get<1>(traj))),
-                        vector_to_numpy(std::move(get<2>(traj))),
-                        vector_to_numpy(std::move(get<3>(traj))));
-  // return py::make_tuple(vector_to_numpy(data, data.size() / L, L),
+  return py::make_tuple(vector_to_numpy(std::move(sim.DATA), ITERS, L),
+                        vector_to_numpy(std::move(sim.TIMES)),
+                        vector_to_numpy(std::move(sim.ACTION)),
+                        vector_to_numpy(std::move(sim.SIDE)));
+  
+  // return py::make_tuple(vector_to_numpy(std::move(data), data.size() / L, L),
+  //                       vector_to_numpy(std::move(get<1>(traj))),
+  //                       vector_to_numpy(std::move(get<2>(traj))),
+  //                       vector_to_numpy(std::move(get<3>(traj))));
+  // // return py::make_tuple(vector_to_numpy(data, data.size() / L, L),
   //                       vector_to_numpy(get<1>(traj)),
   //                       vector_to_numpy(get<2>(traj)),
   //                       vector_to_numpy(get<3>(traj)));
