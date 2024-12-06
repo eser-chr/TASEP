@@ -6,13 +6,12 @@
 #else
 #define ASSERT(condition)
 #endif
-using DATATYPE = double;
-tasep::BasicIteration::BasicIteration(int L, int ITERS, DATATYPE kon,
-                                      DATATYPE koff, DATATYPE kstep, DATATYPE q,
-                                      DATATYPE kq)
+
+template <typename T>
+tasep::BasicIteration<T>::BasicIteration(int L, int ITERS, T kon, T koff,
+                                         T kstep, T q, T kq)
     : L(L), ITERS(ITERS), kon(kon), koff(koff), kstep(kstep), q(q), kq(kq),
       gen(std::random_device{}()), dis(0.0, 1.0) {
-
 
   grid.resize(L + ghost, 0);
   propensities.resize(N_actions * (L + ghost), 0.0);
@@ -47,15 +46,14 @@ tasep::BasicIteration::BasicIteration(int L, int ITERS, DATATYPE kon,
 
 // --------------------------------------------------------------------------
 
-void tasep::BasicIteration::printme() {
+template <typename T> void tasep::BasicIteration<T>::printme() {
   std::cout << "kon: " << kon << "\n";
   std::cout << "koff: " << koff << "\n";
   std::cout << "kstep: " << kstep << "\n";
   std::cout << "kq: " << kq << "\n";
   std::cout << "q: " << q << std::endl;
 }
-
-void tasep::BasicIteration::bind(int side) {
+template <typename T> void tasep::BasicIteration<T>::bind(int side) {
 
   ASSERT(grid[side] == 0);
   temp = side * N_actions;
@@ -66,8 +64,7 @@ void tasep::BasicIteration::bind(int side) {
   propensities[temp + DEACTIVATE] = 0.0;
   grid[side] = 1;
 }
-
-void tasep::BasicIteration::unbind(int side) {
+template <typename T> void tasep::BasicIteration<T>::unbind(int side) {
   ASSERT(grid[side] == 1);
   temp = side * N_actions;
   propensities[temp + STEP - N_actions] = (double)kstep * grid[side - 1];
@@ -77,8 +74,7 @@ void tasep::BasicIteration::unbind(int side) {
   propensities[temp + DEACTIVATE] = kq;
   grid[side] = 0;
 }
-
-void tasep::BasicIteration::step(int side) {
+template <typename T> void tasep::BasicIteration<T>::step(int side) {
   temp = side * N_actions;
 
   propensities[temp + STEP - N_actions] = (double)kstep * grid[side - 1];
@@ -95,8 +91,7 @@ void tasep::BasicIteration::step(int side) {
   grid[side] = 0;
   grid[side + 1] = 1;
 }
-
-void tasep::BasicIteration::deactivate(int side) {
+template <typename T> void tasep::BasicIteration<T>::deactivate(int side) {
   ASSERT(grid[side] == 0);
   temp = side * N_actions;
   propensities[temp + BIND] = kon;
@@ -104,8 +99,7 @@ void tasep::BasicIteration::deactivate(int side) {
   propensities[temp + STEP] = 0.0;
   propensities[temp + DEACTIVATE] = 0;
 }
-
-void tasep::BasicIteration::fix_boundaries() {
+template <typename T> void tasep::BasicIteration<T>::fix_boundaries() {
   std::fill(propensities.begin(), propensities.begin() + l_ghost * N_actions,
             0.0);
   std::fill(propensities.end() - r_ghost * N_actions, propensities.end(), 0.0);
@@ -113,13 +107,11 @@ void tasep::BasicIteration::fix_boundaries() {
   grid[L + 1] = 0;
   ASSERT(grid[L + 2] == 0);
 };
-
-void tasep::BasicIteration::fix_cumsum(int side) {
+template <typename T> void tasep::BasicIteration<T>::fix_cumsum(int side) {
   for (int i = (side - 1) * N_actions; i < propensities.size(); i++)
     sum_propensities[i] = sum_propensities[i - 1] + propensities[i];
 };
-
-void tasep::BasicIteration::iteration() {
+template <typename T> void tasep::BasicIteration<T>::iteration() {
   r1 = dis(gen);
   r2 = dis(gen) * sum_propensities.back();
   dt = (1.0 / sum_propensities.back()) * log(1 / r1);
@@ -155,16 +147,14 @@ void tasep::BasicIteration::iteration() {
   fix_boundaries();
   fix_cumsum(_side);
 };
-
-void tasep::BasicIteration::append_trajectory() {
+template <typename T> void tasep::BasicIteration<T>::append_trajectory() {
   std::copy(grid.begin() + l_ghost, grid.end() - r_ghost,
             DATA.begin() + _iter * L);
   TIMES[_iter] = time;
   ACTION[_iter] = static_cast<u_int8_t>(_action);
   SIDE[_iter] = static_cast<u_int16_t>(_side - l_ghost);
 };
-
-void tasep::BasicIteration::simulation() {
+template <typename T> void tasep::BasicIteration<T>::simulation() {
   while (_iter < ITERS) {
     append_trajectory();
     iteration();
@@ -173,17 +163,6 @@ void tasep::BasicIteration::simulation() {
   }
 }
 
-// std::tuple<std::vector<uint8_t>, std::vector<DATATYPE>,
-// std::vector<u_int8_t>,
-//            std::vector<uint16_t>>
-// tasep::BasicIteration::get_trajectory() {
-//   std::cout << std::flush;
-//   std::vector<u_int8_t> action_subvector(
-//       std::make_move_iterator(ACTION.begin() + 1),
-//       std::make_move_iterator(ACTION.end()));
-//   std::vector<u_int16_t> side_subvector(
-//       std::make_move_iterator(SIDE.begin() + 1),
-//       std::make_move_iterator(SIDE.end()));
 
-//   return std::make_tuple(DATA, TIMES, action_subvector, side_subvector);
-// };
+template class tasep::BasicIteration<float>;
+template class tasep::BasicIteration<double>;
