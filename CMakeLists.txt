@@ -94,7 +94,6 @@ find_package(pybind11 REQUIRED)
 add_library(
     tasep MODULE
     src/Bindings.cpp
-    src/cooperative_tasep.cpp
     src/basic.cpp
     src/count_kins.cpp
     src/basiciterations.cpp

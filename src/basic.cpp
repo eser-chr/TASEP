@@ -2,7 +2,7 @@
 
 template <typename T>
 tasep::Basic<T>::Basic(int L, T TIME, T kon, T koff, T kstep, T q, T kq,
-                       bool trajectory, bool details, T period = 0.1)
+                       bool trajectory, bool details, T period)
     : L(L), TIME(TIME), kon(kon), koff(koff), kstep(kstep), q(q), kq(kq),
       trajectory(trajectory), details(details), period(period), time(0.0),
       gen(std::random_device{}()), dis(0.0, 1.0) {
