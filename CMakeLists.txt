@@ -96,7 +96,9 @@ add_library(
     src/cooperative_tasep.cpp
     src/binding_cooperative_tasep.cpp
     src/basic.cpp
+    src/count_kins.cpp
     src/basiciterations.cpp
+    src/neighbors.cpp
 )
 
 # Include directories
@@ -105,7 +107,7 @@ target_include_directories(tasep PRIVATE include)
 
 # Link pybind11
 target_link_libraries(tasep PRIVATE pybind11::module)
-
+target_compile_definitions(tasep PRIVATE TIME_ME)
 
 
 

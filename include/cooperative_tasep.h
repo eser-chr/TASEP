@@ -86,19 +86,14 @@ private:
   // void simulation_details_trajectory();
 };
 
+using DATATYPE=double;
 class BasicIteration {
-  using DATATYPE = double;
 
 public:
   BasicIteration(int L, int ITERS, DATATYPE kon, DATATYPE koff, DATATYPE kstep,
                  DATATYPE q, DATATYPE kq);
   void simulation();
   void printme();
-  // std::tuple<std::vector<uint8_t>, std::vector<DATATYPE>> get_trajectory();
-  // std::tuple<std::vector<uint8_t>, std::vector<DATATYPE>,
-  // std::vector<u_int8_t>,
-  //            std::vector<uint16_t>>
-  // get_trajectory();
 
   std::vector<uint8_t> DATA;
   std::vector<DATATYPE> TIMES;
