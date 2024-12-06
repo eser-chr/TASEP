@@ -6,49 +6,43 @@
 #else
 #define ASSERT(condition)
 #endif
-
 template <typename T>
-tasep::Neighbors<T>::Neighbors(int L, int ITERS, T kon, T koff, T kstep, T q,
-                               T kq)
+tasep::NeighborsBase<T>::NeighborsBase(int L, int ITERS, T kon, T koff, T kstep,
+                                       T q, T kq)
     : L(L), ITERS(ITERS), kon(kon), koff(koff), kstep(kstep), q(q), kq(kq),
       gen(std::random_device{}()), dis(0.0, 1.0) {
-
   grid.resize(L + ghost, 0);
   propensities.resize(N_actions * (L + ghost), 0.0);
   sum_propensities.resize(N_actions * (L + ghost), 0.0);
 
-  //   KINS.resize(ITERS);
   TIMES.resize(ITERS);
-  NEIGHBORS.reserve(2 * ITERS);
   ACTION.resize(ITERS);
   SIDE.resize(ITERS);
-
   for (int i = l_ghost * N_actions + BIND;
        i < propensities.size() - r_ghost * N_actions; i += N_actions) {
     propensities[i] = kon;
   }
-
-#ifdef DEBUG
-  for (int kl = 0; kl < 20; kl++) {
-    std::cout << propensities[kl] << " ";
-  }
-  std::cout << std::endl;
-#endif
-
   std::partial_sum(propensities.begin(), propensities.end(),
                    sum_propensities.begin());
+}
 
-#ifdef DEBUG
-  for (int kl = 0; kl < 20; kl++) {
-    std::cout << sum_propensities[kl] << " ";
-  }
-  std::cout << std::endl;
-#endif
+template <typename T>
+tasep::Neighbors<T>::Neighbors(int L, int ITERS, T kon, T koff, T kstep, T q,
+                               T kq)
+    : NeighborsBase<T>(L, ITERS, kon, koff, kstep, q, kq) {
+  this->NEIGHBORS.reserve(2 * ITERS);
+}
+
+template <typename T>
+tasep::NNeighbors<T>::NNeighbors(int L, int ITERS, T kon, T koff, T kstep, T q,
+                                 T kq)
+    : NeighborsBase<T>(L, ITERS, kon, koff, kstep, q, kq) {
+  this->NEIGHBORS.reserve(ITERS);
 }
 
 // --------------------------------------------------------------------------
 
-template <typename T> void tasep::Neighbors<T>::printme() {
+template <typename T> void tasep::NeighborsBase<T>::printme() {
   std::cout << "kon: " << kon << "\n";
   std::cout << "koff: " << koff << "\n";
   std::cout << "kstep: " << kstep << "\n";
@@ -56,8 +50,7 @@ template <typename T> void tasep::Neighbors<T>::printme() {
   std::cout << "q: " << q << std::endl;
 }
 
-template <typename T> void tasep::Neighbors<T>::bind(int side) {
-
+template <typename T> void tasep::NeighborsBase<T>::bind(int side) {
   ASSERT(grid[side] == 0);
   temp = side * N_actions;
   propensities[temp + STEP - N_actions] = 0.0;
@@ -67,33 +60,59 @@ template <typename T> void tasep::Neighbors<T>::bind(int side) {
   propensities[temp + DEACTIVATE] = 0.0;
   grid[side] = 1;
   TOTAL_KINS++;
+}
 
+template <typename T> void tasep::Neighbors<T>::bind(int side) {
+NeighborsBase<T>::bind(side);
   RNN = -1;
   LNN = -1;
   lnn = side - 1;
   rnn = side + 1;
 
-  while (lnn > l_ghost) {
-    if (grid[lnn]) {
-      LNN = lnn;
+  while (lnn > this->l_ghost) {
+    if (this->grid[lnn]) {
+      LNN = lnn - side;
       break;
     };
     lnn--;
   }
 
-  while (rnn < r_ghost) {
-    if (grid[rnn]) {
-      RNN = rnn;
+  while (rnn < this->r_ghost) {
+    if (this->grid[rnn]) {
+      RNN = rnn - side;
       break;
     };
     rnn++;
   }
 
-  NEIGHBORS.push_back(LNN);
-  NEIGHBORS.push_back(RNN);
+  this->NEIGHBORS.push_back(LNN);
+  this->NEIGHBORS.push_back(RNN);
 }
 
-template <typename T> void tasep::Neighbors<T>::unbind(int side) {
+template <typename T>
+void tasep::NNeighbors<T>::bind(int side) { 
+NeighborsBase<T>::bind(side);
+  NN = -1;
+  lnn = side - 1;
+  rnn = side + 1;
+
+  while (lnn > this->l_ghost && rnn < this->r_ghost) {
+    if (this->grid[lnn]) {
+      NN = lnn - side;
+      break;
+    };
+    if (this->grid[rnn]) {
+      NN = rnn - side;
+      break;
+    };
+
+    lnn--;
+    rnn++;
+  }
+  this->NEIGHBORS.push_back(NN);
+}
+
+template <typename T> void tasep::NeighborsBase<T>::unbind(int side) {
   ASSERT(grid[side] == 1);
   temp = side * N_actions;
   propensities[temp + STEP - N_actions] = (double)kstep * grid[side - 1];
@@ -105,7 +124,7 @@ template <typename T> void tasep::Neighbors<T>::unbind(int side) {
   TOTAL_KINS--;
 }
 
-template <typename T> void tasep::Neighbors<T>::step(int side) {
+template <typename T> void tasep::NeighborsBase<T>::step(int side) {
   temp = side * N_actions;
 
   propensities[temp + STEP - N_actions] = (double)kstep * grid[side - 1];
@@ -124,7 +143,7 @@ template <typename T> void tasep::Neighbors<T>::step(int side) {
   if (side == L) TOTAL_KINS--;
 }
 
-template <typename T> void tasep::Neighbors<T>::deactivate(int side) {
+template <typename T> void tasep::NeighborsBase<T>::deactivate(int side) {
   ASSERT(grid[side] == 0);
   temp = side * N_actions;
   propensities[temp + BIND] = kon;
@@ -133,7 +152,7 @@ template <typename T> void tasep::Neighbors<T>::deactivate(int side) {
   propensities[temp + DEACTIVATE] = 0;
 }
 
-template <typename T> void tasep::Neighbors<T>::fix_boundaries() {
+template <typename T> void tasep::NeighborsBase<T>::fix_boundaries() {
   std::fill(propensities.begin(), propensities.begin() + l_ghost * N_actions,
             0.0);
   std::fill(propensities.end() - r_ghost * N_actions, propensities.end(), 0.0);
@@ -142,12 +161,12 @@ template <typename T> void tasep::Neighbors<T>::fix_boundaries() {
   ASSERT(grid[L + 2] == 0);
 };
 
-template <typename T> void tasep::Neighbors<T>::fix_cumsum(int side) {
+template <typename T> void tasep::NeighborsBase<T>::fix_cumsum(int side) {
   for (int i = (side - 1) * N_actions; i < propensities.size(); i++)
     sum_propensities[i] = sum_propensities[i - 1] + propensities[i];
 };
 
-template <typename T> void tasep::Neighbors<T>::iteration() {
+template <typename T> void tasep::NeighborsBase<T>::iteration() {
   r1 = dis(gen);
   r2 = dis(gen) * sum_propensities.back();
   dt = (1.0 / sum_propensities.back()) * log(1 / r1);
@@ -184,14 +203,14 @@ template <typename T> void tasep::Neighbors<T>::iteration() {
   fix_cumsum(_side);
 };
 
-template <typename T> void tasep::Neighbors<T>::append_trajectory() {
+template <typename T> void tasep::NeighborsBase<T>::append_trajectory() {
 
   TIMES[_iter] = time;
   ACTION[_iter] = _action;
   SIDE[_iter] = _side;
 };
 
-template <typename T> void tasep::Neighbors<T>::simulation() {
+template <typename T> void tasep::NeighborsBase<T>::simulation() {
   while (_iter < ITERS) {
     append_trajectory();
     iteration();
@@ -200,5 +219,9 @@ template <typename T> void tasep::Neighbors<T>::simulation() {
   }
 }
 
+template class tasep::NeighborsBase<double>;
+template class tasep::NeighborsBase<float>;
 template class tasep::Neighbors<double>;
 template class tasep::Neighbors<float>;
+template class tasep::NNeighbors<double>;
+template class tasep::NNeighbors<float>;
