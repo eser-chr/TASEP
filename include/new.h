@@ -26,7 +26,10 @@ public:
 
 protected:
   int L; // 
-  int K; // K = std::sqrt(4*(L+3))
+
+  int ROWS;
+  int COLS;
+
   int ITERS;
   T kon; // _ _ _ + _ _   ->   _ _ _ + + _
   T koff;
@@ -34,8 +37,8 @@ protected:
   T q;
   T kq;
   std::vector<T> propensities;
-  std::vector<T> sum_propensities;
-//   std::vector<T> sum_propensities;
+  std::vector<T> vec_partial_propensities;
+  std::vector<T> sum__partial_propensities;
   std::vector<uint8_t> grid;
 
   std::random_device rd;
@@ -50,7 +53,7 @@ protected:
 
   enum ACTION { BIND = 0, UNBIND = 1, STEP = 2, DEACTIVATE = 3 };
   const int l_ghost = 1;
-  const int r_ghost = 2;
+  int r_ghost;
   const int ghost = l_ghost + r_ghost;
   const int N_actions = 4;
 

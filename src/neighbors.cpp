@@ -64,8 +64,8 @@ template <typename T> void tasep::NeighborsBase<T>::bind(int side) {
 
 template <typename T> void tasep::Neighbors<T>::bind(int side) {
 NeighborsBase<T>::bind(side);
-  RNN = -1;
-  LNN = -1;
+  RNN = 0;
+  LNN = 0;
   lnn = side - 1;
   rnn = side + 1;
 
@@ -92,7 +92,7 @@ NeighborsBase<T>::bind(side);
 template <typename T>
 void tasep::NNeighbors<T>::bind(int side) { 
 NeighborsBase<T>::bind(side);
-  NN = -1;
+  NN = 0;
   lnn = side - 1;
   rnn = side + 1;
 
