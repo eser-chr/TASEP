@@ -63,11 +63,11 @@ template <typename T> void tasep::NeighborsBase<T>::bind(int side) {
 }
 
 template <typename T> void tasep::Neighbors<T>::bind(int side) {
-NeighborsBase<T>::bind(side);
+  NeighborsBase<T>::bind(side);
   RNN = 0;
   LNN = 0;
-  lnn = static_cast<int16_t>(side - 1);
-  rnn = static_cast<int16_t>(side + 1);
+  lnn = (side - 1);
+  rnn = (side + 1);
 
   while (lnn > this->l_ghost) {
     if (this->grid[lnn]) {
@@ -84,19 +84,21 @@ NeighborsBase<T>::bind(side);
     }
     rnn++;
   }
-  
-  this->NEIGHBORS.push_back(LNN);
-  this->NEIGHBORS.push_back(RNN);
+  if (LNN != 0 && RNN != 0) {
+    assert(LNN<0);
+    assert(RNN>0);
+    this->NEIGHBORS.push_back(LNN);
+    this->NEIGHBORS.push_back(RNN);
+  }
 }
 
-template <typename T>
-void tasep::NNeighbors<T>::bind(int side) { 
-NeighborsBase<T>::bind(side);
+template <typename T> void tasep::NNeighbors<T>::bind(int side) {
+  NeighborsBase<T>::bind(side);
   NN = 0;
   lnn = side - 1;
   rnn = side + 1;
 
-  while (lnn > this->l_ghost && rnn < this->L+ this->r_ghost) {
+  while (lnn > this->l_ghost && rnn < this->L + this->r_ghost) {
     if (this->grid[lnn]) {
       NN = lnn - side;
       break;
@@ -109,7 +111,7 @@ NeighborsBase<T>::bind(side);
     lnn--;
     rnn++;
   }
-  this->NEIGHBORS.push_back(NN);
+  if (NN != 0) this->NEIGHBORS.push_back(NN);
 }
 
 template <typename T> void tasep::NeighborsBase<T>::unbind(int side) {
