@@ -73,7 +73,7 @@ public:
   Neighbors(int L, int ITERS, T kon, T koff, T kstep, T q, T kq);
 
 private:
-  int RNN, LNN, rnn, lnn;
+  int16_t RNN, LNN, rnn, lnn;
   void bind(int side) override;
 };
 
@@ -82,7 +82,7 @@ public:
   NNeighbors(int L, int ITERS, T kon, T koff, T kstep, T q, T kq);
 
 private:
-  int NN, rnn, lnn;
+  int16_t NN, rnn, lnn;
   void bind(int side) override;
 };
 

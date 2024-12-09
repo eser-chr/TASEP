@@ -66,25 +66,25 @@ template <typename T> void tasep::Neighbors<T>::bind(int side) {
 NeighborsBase<T>::bind(side);
   RNN = 0;
   LNN = 0;
-  lnn = side - 1;
-  rnn = side + 1;
+  lnn = static_cast<int16_t>(side - 1);
+  rnn = static_cast<int16_t>(side + 1);
 
   while (lnn > this->l_ghost) {
     if (this->grid[lnn]) {
       LNN = lnn - side;
       break;
-    };
+    }
     lnn--;
   }
 
-  while (rnn < this->r_ghost) {
+  while (rnn < this->L + this->r_ghost) {
     if (this->grid[rnn]) {
       RNN = rnn - side;
       break;
-    };
+    }
     rnn++;
   }
-
+  
   this->NEIGHBORS.push_back(LNN);
   this->NEIGHBORS.push_back(RNN);
 }
@@ -96,7 +96,7 @@ NeighborsBase<T>::bind(side);
   lnn = side - 1;
   rnn = side + 1;
 
-  while (lnn > this->l_ghost && rnn < this->r_ghost) {
+  while (lnn > this->l_ghost && rnn < this->L+ this->r_ghost) {
     if (this->grid[lnn]) {
       NN = lnn - side;
       break;
@@ -178,9 +178,9 @@ template <typename T> void tasep::NeighborsBase<T>::iteration() {
   _action = _index & 3;
   _side = _index >> 2;
 
-  ASSERT(side != 0);
-  ASSERT(side != L);
-  ASSERT(side != L + 1);
+  ASSERT(_side != 0);
+  ASSERT(_side != L);
+  ASSERT(_side != L + 1);
 
   switch (_action) {
   case 0:
