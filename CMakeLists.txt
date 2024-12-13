@@ -108,6 +108,7 @@ target_include_directories(tasep PRIVATE include)
 # Link pybind11
 target_link_libraries(tasep PRIVATE pybind11::module)
 # target_compile_definitions(tasep PRIVATE DEBUG)
+target_compile_definitions(tasep PRIVATE TIME_ME)
 
 
 

@@ -128,8 +128,22 @@ void tasep::CountKins<T>::fix_boundaries() {
 
 template<typename T>
 void tasep::CountKins<T>::fix_cumsum(int side) {
-  for (int i = (side - 1) * N_actions; i < propensities.size(); i++)
+  // Old version
+  // for (int i = (side - 1) * N_actions; i < propensities.size(); i++)
+  //   sum_propensities[i] = sum_propensities[i - 1] + propensities[i];
+
+
+  // Extra code 
+  int i = (side - 1) * N_actions;
+  T diff = sum_propensities[(side+2)*N_actions];
+
+  for (; i <= (side+2)*N_actions; i++)
     sum_propensities[i] = sum_propensities[i - 1] + propensities[i];
+
+  diff -=sum_propensities[(side+2)*N_actions];
+
+  for (; i < sum_propensities.size(); i++)
+    sum_propensities[i] -= diff;
 };
 
 template<typename T>
