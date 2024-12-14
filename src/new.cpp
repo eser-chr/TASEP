@@ -1,10 +1,29 @@
 #include "new.h"
 #include "timer.hpp"
 
-#ifdef DEBUG
-#define ASSERT(condition) assert(condition)
+#include <cstdlib> // for abort()
+#include <iostream>
+
+#ifdef DEBUGB
+#define ASSERT(condition, message)                 \
+    do {                                           \
+        if (!(condition)) {                        \
+            std::cout << "Assertion failed: "      \
+                      << (message) << std::endl;   \
+        }                                          \
+    } while (false)
+
+
+// } //     if (!(condition)) {                                          \
+    //         std::cerr << "Assertion failed: (" #condition ") in "    \
+    //                   << __FILE__ << ", line " << __LINE__ << ": "   \
+    //                   << message << std::endl;                       \
+    //         std::abort();                                            \
+    //     }                                                            \
+
+
 #else
-#define ASSERT(condition)
+#define ASSERT(condition, message)
 #endif
 
 template <typename T>
@@ -13,44 +32,60 @@ fastTasep::BasicIteration<T>::BasicIteration(int L, int ITERS, T kon, T koff,
     : L(L), ITERS(ITERS), kon(kon), koff(koff), kstep(kstep), q(q), kq(kq),
       gen(std::random_device{}()), dis(0.0, 1.0) {
 
+  // std::cout << " I am in the constructor" << std::endl;
+
   COLS = 40;
-  ROWS = (L + l_ghost) / 10;
+  ROWS = 2 + ((L + ghost) * N_actions / COLS);
 
-  ASSERT((L + l_ghost) % 10 == 0);
-
+  // assert((L + l_ghost) % 10 == 0);
 
   grid.resize(L + ghost, 0);
-  // propensities.resize(N_actions * (L + ghost), 0.0);
-  propensities.resize(ROWS*COLS, 0.0);
+  propensities.resize(ROWS * COLS, 0.0);
   // sum_propensities.resize(N_actions * (L + ghost), 0.0);
 
-  vec_partial_propensities.resize(ROWS, 0.0);
-  sum__partial_propensities.resize(ROWS + 1, 0.0);
+  sum_of_rows.resize(ROWS, 0.0);
+  cumsum_of_rows.resize(ROWS, 0.0);
+  cumsum_of_rows[0] = 0.0;
+
   DATA.resize(L * ITERS);
   TIMES.resize(ITERS);
   ACTION.resize(ITERS);
   SIDE.resize(ITERS);
 
-  for (int i = l_ghost * N_actions + BIND;
-       i < propensities.size() - r_ghost * N_actions; i += N_actions) {
+  for (int i = l_ghost * N_actions + BIND; i < (l_ghost + L) * N_actions;
+       i += N_actions) {
     propensities[i] = kon;
   }
 
-#ifdef DEBUG
+#ifdef DEBUGB
   for (int kl = 0; kl < 20; kl++) {
     std::cout << propensities[kl] << " ";
   }
   std::cout << std::endl;
-#endif
-
   // std::partial_sum(propensities.begin(), propensities.end(),
   //                  sum_propensities.begin());
+  std::cout << "BEfore cumm" << std::endl;
+#endif
 
-  fix_cumsum(4);
+  for (int row = 0; row < ROWS; row++) {
+    sum_of_rows[row] =
+        std::accumulate(propensities.begin() + row * COLS,
+                        propensities.begin() + (row + 1) * COLS, 0.0);
+  }
 
-#ifdef DEBUG
-  for (int kl = 0; kl < ROWS+1; kl++) {
-    std::cout << sum__partial_propensities[kl] << " ";
+  for (int row = 1; row < ROWS; row++) {
+    cumsum_of_rows[row] = cumsum_of_rows[row - 1] + sum_of_rows[row - 1];
+  }
+#ifdef DEBUGB
+
+  std::cout << _iter << " " << ITERS << std::endl;
+  std::cout << "Done from constructor" << std::endl;
+  for (int kl = 0; kl < ROWS; kl++) {
+    std::cout << sum_of_rows[kl] << " ";
+  }
+  std::cout << std::endl;
+  for (int kl = 0; kl < ROWS; kl++) {
+    std::cout << cumsum_of_rows[kl] << " ";
   }
   std::cout << std::endl;
 #endif
@@ -67,7 +102,7 @@ template <typename T> void fastTasep::BasicIteration<T>::printme() {
 }
 template <typename T> void fastTasep::BasicIteration<T>::bind(int side) {
 
-  ASSERT(grid[side] == 0);
+  ASSERT(grid[side] == 0, "wrong binding");
   temp = side * N_actions;
   propensities[temp + STEP - N_actions] = 0.0;
   propensities[temp + BIND] = 0;
@@ -77,7 +112,7 @@ template <typename T> void fastTasep::BasicIteration<T>::bind(int side) {
   grid[side] = 1;
 }
 template <typename T> void fastTasep::BasicIteration<T>::unbind(int side) {
-  ASSERT(grid[side] == 1);
+  ASSERT(grid[side] == 1, "Wrong unbinding");
   temp = side * N_actions;
   propensities[temp + STEP - N_actions] = (double)kstep * grid[side - 1];
   propensities[temp + BIND] = kon * q;
@@ -104,7 +139,7 @@ template <typename T> void fastTasep::BasicIteration<T>::step(int side) {
   grid[side + 1] = 1;
 }
 template <typename T> void fastTasep::BasicIteration<T>::deactivate(int side) {
-  ASSERT(grid[side] == 0);
+  ASSERT(grid[side] == 0, "Wrong step");
   temp = side * N_actions;
   propensities[temp + BIND] = kon;
   propensities[temp + UNBIND] = 0;
@@ -114,10 +149,11 @@ template <typename T> void fastTasep::BasicIteration<T>::deactivate(int side) {
 template <typename T> void fastTasep::BasicIteration<T>::fix_boundaries() {
   std::fill(propensities.begin(), propensities.begin() + l_ghost * N_actions,
             0.0);
-  std::fill(propensities.end() - r_ghost * N_actions, propensities.end(), 0.0);
+  std::fill(propensities.begin() + (L + l_ghost) * N_actions,
+            propensities.begin() + (L + ghost) * N_actions, 0.0);
   grid[0] = 0;
   grid[L + 1] = 0;
-  ASSERT(grid[L + 2] == 0);
+  ASSERT(grid[L + 2] == 0, "Boundaries were affected");
 };
 template <typename T> void fastTasep::BasicIteration<T>::fix_cumsum(int side) {
   int first_el_index =
@@ -125,61 +161,51 @@ template <typename T> void fastTasep::BasicIteration<T>::fix_cumsum(int side) {
       N_actions; // find the ROW of the first element that might have changed
   int I = first_el_index / COLS;
 
-  vec_partial_propensities[I] =
-      std::accumulate(propensities.begin() + I * COLS,
-                      propensities.begin() + (I + 1) * COLS, 0.0);
-  vec_partial_propensities[I + 1] =
+  sum_of_rows[I] = std::accumulate(propensities.begin() + I * COLS,
+                                   propensities.begin() + (I + 1) * COLS, 0.0);
+  sum_of_rows[I + 1] =
       std::accumulate(propensities.begin() + (I + 1) * COLS,
                       propensities.begin() + (I + 2) * COLS, 0.0);
 
-  for (int temp = I; temp < ROWS + 1; temp++) {
-    sum__partial_propensities[I + 1] =
-        sum__partial_propensities[I] + vec_partial_propensities[I];
+  for (int temp = I; temp < ROWS; temp++) { // remove temp
+    cumsum_of_rows[temp + 1] = cumsum_of_rows[temp] + sum_of_rows[temp];
   }
-
-  //   sum_propensities[Row + 1] =
-  //       std::accumulate(propensities.size() + Row * K,
-  //                       propensities.size() + (Row + 1) * K,
-  //                       sum_propensities[Row]);
-
-  //   sum_propensities[Row + 2] =
-  //       std::accumulate(propensities.size() + Row * K,
-  //                       propensities.size() + (Row + 1) * K,
-  //                       sum_propensities[Row+1]);
-
-  // Row= Row+2;
-  // T diff = sum_propensities[Row]-R2;
-  //   for(;Row<LEN_SUM_PROPENSITIES; Row++){
-  //     sum_propensities[Row]+=diff;
-  //   }
+  // std::cout << std::endl;
 };
 
 template <typename T> void fastTasep::BasicIteration<T>::set_index() {
-  _INDEX = std::distance(sum__partial_propensities.begin(),
-                         std::lower_bound(sum__partial_propensities.begin(),
-                                          sum__partial_propensities.end(), r2));
+  _INDEX = std::distance(
+      cumsum_of_rows.begin(),
+      std::upper_bound(cumsum_of_rows.begin(), cumsum_of_rows.end(), r2));
 
-  _index = _INDEX * COLS;
-  temp_sum = sum__partial_propensities[_INDEX];
+  _index = (_INDEX - 1) * COLS;
+  // std::cout << _index << "    <---INDEX BEFORE" << std::endl;
+  T temp_sum = cumsum_of_rows[_INDEX - 1];
+  // std::cout << "temp_sum, r2  " << temp_sum << "," << r2 << std::endl;
   while (temp_sum < r2) {
+    // std::cout << "_index, temp_sum, r2 " << _index << ", " << temp_sum << ",
+    // "
+    //           << r2 << std::endl;
     temp_sum += propensities[_index];
     _index++;
   }
+  _index--;
 };
 
 template <typename T> void fastTasep::BasicIteration<T>::iteration() {
   r1 = dis(gen);
-  r2 = dis(gen) * sum__partial_propensities.back();
-  dt = (1.0 / sum__partial_propensities.back()) * log(1 / r1);
+  r2 = dis(gen) * cumsum_of_rows.back();
+
+  dt = (1.0 / cumsum_of_rows.back()) * log(1 / r1);
+  // _index = 0;
 
   set_index();
 
   _action = _index & 3;
   _side = _index >> 2;
 
-  ASSERT(side != 0);
-  ASSERT(side != L);
-  ASSERT(side != L + 1);
+  ASSERT(_side != 0, "_side is 0");
+  ASSERT(_side < L+1 , "side is bigger than the microtubule");
 
   switch (_action) {
   case 0:
@@ -209,9 +235,14 @@ template <typename T> void fastTasep::BasicIteration<T>::append_trajectory() {
   SIDE[_iter] = static_cast<u_int16_t>(_side - l_ghost);
 };
 template <typename T> void fastTasep::BasicIteration<T>::simulation() {
+  // _iter = ITERS-10;
+  // std::cout << "_iter= " << _iter << std::endl;
+  // std::cout << "REAL SIM" << std::endl;
+  // std::cout << "-----------------" << std::endl;
   while (_iter < ITERS) {
     append_trajectory();
     iteration();
+    // std::cout << _action << " " << _side << std::endl;
     time += dt;
     _iter++;
   }

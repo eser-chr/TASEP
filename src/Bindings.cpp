@@ -3,9 +3,9 @@
 #include "neighbors.h"
 #include "new.h"
 #include "timer.hpp"
-#include <pybind11/stl.h>
-#include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 using namespace std;
 namespace py = pybind11;
@@ -39,9 +39,8 @@ py::tuple iter_sim(int L, int ITERS, double kon, double koff, double kstep,
   tasep::BasicIteration sim(L, ITERS, kon, koff, kstep, q, kq);
   t1 = timer1.get();
 
-  if (verbose) {
-    sim.printme();
-  }
+  if (verbose) sim.printme();
+
   MyTimer timer2{};
   sim.simulation();
   t2 = timer2.get();
@@ -57,6 +56,34 @@ py::tuple iter_sim(int L, int ITERS, double kon, double koff, double kstep,
   std::cout << "times: " << t1 << "," << t2 << "," << t3 << std::endl;
   return to_rtn;
 }
+
+py::tuple new_iter_sim(int L, int ITERS, double kon, double koff, double kstep,
+                       double q, double kq, bool verbose = false) {
+
+  double t1, t2, t3;
+  MyTimer timer1{};
+  fastTasep::BasicIteration<double> sim(L, ITERS, kon, koff, kstep, q, kq);
+  t1 = timer1.get();
+
+  if (verbose) sim.printme();
+
+  MyTimer timer2{};
+  sim.simulation();
+  t2 = timer2.get();
+
+  MyTimer timer3{};
+  const auto &to_rtn =
+      py::make_tuple(vector_to_numpy(std::move(sim.DATA), ITERS, L),
+                     vector_to_numpy(std::move(sim.TIMES)),
+                     vector_to_numpy(std::move(sim.ACTION)),
+                     vector_to_numpy(std::move(sim.SIDE)));
+  t3 = timer3.get();
+
+  std::cout << "times: " << t1 << "," << t2 << "," << t3 << std::endl;
+  return to_rtn;
+
+  // std::cout<<"Now it works"<<std::endl;
+}
 #else
 py::tuple iter_sim(int L, int ITERS, double kon, double koff, double kstep,
                    double q, double kq, bool verbose = false) {
@@ -69,17 +96,16 @@ py::tuple iter_sim(int L, int ITERS, double kon, double koff, double kstep,
                         vector_to_numpy(std::move(sim.SIDE)));
 }
 
-
-// py::tuple new_iter_sim(int L, int ITERS, double kon, double koff, double kstep,
-//                    double q, double kq, bool verbose = false) {
-//   fastTasep::BasicIteration<double> sim(L, ITERS, kon, koff, kstep, q, kq);
-//   if (verbose) sim.printme();
-//   sim.simulation();
-//   return py::make_tuple(vector_to_numpy(std::move(sim.DATA), ITERS, L),
-//                         vector_to_numpy(std::move(sim.TIMES)),
-//                         vector_to_numpy(std::move(sim.ACTION)),
-//                         vector_to_numpy(std::move(sim.SIDE)));
-// }
+py::tuple new_iter_sim(int L, int ITERS, double kon, double koff, double kstep,
+                       double q, double kq, bool verbose = false) {
+  fastTasep::BasicIteration<double> sim(L, ITERS, kon, koff, kstep, q, kq);
+  if (verbose) sim.printme();
+  sim.simulation();
+  return py::make_tuple(vector_to_numpy(std::move(sim.DATA), ITERS, L),
+                        vector_to_numpy(std::move(sim.TIMES)),
+                        vector_to_numpy(std::move(sim.ACTION)),
+                        vector_to_numpy(std::move(sim.SIDE)));
+}
 #endif
 
 // -----------------------------------------------------
@@ -325,6 +351,5 @@ PYBIND11_MODULE(tasep, m) {
         "Returns only the total number of kins");
   m.def("Fnneighbors", &Fnneighbors_sim,
         "Returns only the total number of kins");
-  // m.def("tryme", &new_iter_sim,
-  //       "Returns only the total number of kins");
+  m.def("tryme", &new_iter_sim, "Returns only the total number of kins");
 }

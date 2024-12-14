@@ -13,12 +13,10 @@
 
 namespace tasep {
 
-template<typename T>
-class CountKins {
+template <typename T> class CountKins {
 
 public:
-  CountKins(int L, int ITERS, T kon, T koff, T kstep,
-                 T q, T kq);
+  CountKins(int L, int ITERS, T kon, T koff, T kstep, T q, T kq);
   void simulation();
   void printme();
 
