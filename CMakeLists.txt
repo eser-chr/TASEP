@@ -96,6 +96,7 @@ add_library(
     src/Bindings.cpp
     src/basic.cpp
     src/count_kins.cpp
+    src/new_count_kins.cpp
     src/basiciterations.cpp
     src/neighbors.cpp
     src/new.cpp
