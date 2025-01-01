@@ -1,5 +1,6 @@
 #pragma once
 #include "timer.hpp"
+#include "bucket_ref.hpp"
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
@@ -35,9 +36,11 @@ protected:
   T kq;
   std::vector<T> propensities;
   
-  int ROWS, COLS;
-  std::vector<T> sum_of_rows;
-  std::vector<T> cumsum_of_rows;
+  // int ROWS, COLS;
+  // std::vector<T> sum_of_rows;
+  // std::vector<T> cumsum_of_rows;
+
+  bucket_ref _manager;
   
   std::vector<uint8_t> grid;
 

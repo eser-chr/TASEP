@@ -30,7 +30,7 @@ template <typename T>
 fastTasep::BasicIteration<T>::BasicIteration(int L, int ITERS, T kon, T koff,
                                              T kstep, T q, T kq)
     : L(L), ITERS(ITERS), kon(kon), koff(koff), kstep(kstep), q(q), kq(kq),
-      gen(std::random_device{}()), dis(0.0, 1.0) {
+      gen(std::random_device{}()), dis(0.0, 1.0){
 
   // std::cout << " I am in the constructor" << std::endl;
 
