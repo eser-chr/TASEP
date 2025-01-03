@@ -26,13 +26,13 @@
 
 template <typename T>
 fastTasep::CountKins<T>::CountKins(int L, int ITERS, T kon, T koff, T kstep,
-                                   T q, T kq)
-    : L(L), ITERS(ITERS), kon(kon), koff(koff), kstep(kstep), q(q), kq(kq),
+                                   T q, T kq, int COLS)
+    : L(L), ITERS(ITERS), kon(kon), koff(koff), kstep(kstep), q(q), kq(kq),COLS(COLS),
       gen(std::random_device{}()), dis(0.0, 1.0) {
 
   // std::cout << " I am in the constructor" << std::endl;
 
-  COLS = 40;
+  // COLS = 60;
   ROWS = 2 + ((L + ghost) * N_actions / COLS);
 
   // assert((L + l_ghost) % 10 == 0);

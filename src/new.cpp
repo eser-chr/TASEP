@@ -5,22 +5,13 @@
 #include <iostream>
 
 #ifdef DEBUGB
-#define ASSERT(condition, message)                 \
-    do {                                           \
-        if (!(condition)) {                        \
-            std::cout << "Assertion failed: "      \
-                      << (message) << std::endl;   \
-        }                                          \
-    } while (false)
-
-
-// } //     if (!(condition)) {                                          \
-    //         std::cerr << "Assertion failed: (" #condition ") in "    \
-    //                   << __FILE__ << ", line " << __LINE__ << ": "   \
-    //                   << message << std::endl;                       \
-    //         std::abort();                                            \
-    //     }                                                            \
-
+#define ASSERT(condition, message)                                             \
+  do {                                                                         \
+    if (!(condition)) {                                                        \
+      std::cout << "Assertion failed: " << (message) << std::endl;             \
+      throw std::runtime_error("Error");                                       \
+    }                                                                          \
+  } while (false)
 
 #else
 #define ASSERT(condition, message)
@@ -30,22 +21,15 @@ template <typename T>
 fastTasep::BasicIteration<T>::BasicIteration(int L, int ITERS, T kon, T koff,
                                              T kstep, T q, T kq)
     : L(L), ITERS(ITERS), kon(kon), koff(koff), kstep(kstep), q(q), kq(kq),
-      gen(std::random_device{}()), dis(0.0, 1.0){
+      gen(std::random_device{}()), dis(0.0, 1.0) 
+ {
 
-  // std::cout << " I am in the constructor" << std::endl;
-
-  COLS = 40;
-  ROWS = 2 + ((L + ghost) * N_actions / COLS);
-
-  // assert((L + l_ghost) % 10 == 0);
+  int total_size = 4 * (L + ghost);
+  COLS = std::ceil(std::sqrt(total_size)/std::sqrt(2));
+  ROWS = total_size / COLS + 2;
 
   grid.resize(L + ghost, 0);
   propensities.resize(ROWS * COLS, 0.0);
-  // sum_propensities.resize(N_actions * (L + ghost), 0.0);
-
-  sum_of_rows.resize(ROWS, 0.0);
-  cumsum_of_rows.resize(ROWS, 0.0);
-  cumsum_of_rows[0] = 0.0;
 
   DATA.resize(L * ITERS);
   TIMES.resize(ITERS);
@@ -57,38 +41,16 @@ fastTasep::BasicIteration<T>::BasicIteration(int L, int ITERS, T kon, T koff,
     propensities[i] = kon;
   }
 
-#ifdef DEBUGB
-  for (int kl = 0; kl < 20; kl++) {
-    std::cout << propensities[kl] << " ";
-  }
-  std::cout << std::endl;
-  // std::partial_sum(propensities.begin(), propensities.end(),
-  //                  sum_propensities.begin());
-  std::cout << "BEfore cumm" << std::endl;
-#endif
+  // _manager.reset(ROWS, COLS, propensities);
+  _manager = new bucket_ref(ROWS, COLS, propensities);
 
-  for (int row = 0; row < ROWS; row++) {
-    sum_of_rows[row] =
-        std::accumulate(propensities.begin() + row * COLS,
-                        propensities.begin() + (row + 1) * COLS, 0.0);
-  }
+  // for(T i: _manager->_vector)
+  //   std::cout<<i<<" ,";
+  // std::cout<<std::endl;
 
-  for (int row = 1; row < ROWS; row++) {
-    cumsum_of_rows[row] = cumsum_of_rows[row - 1] + sum_of_rows[row - 1];
-  }
-#ifdef DEBUGB
-
-  std::cout << _iter << " " << ITERS << std::endl;
-  std::cout << "Done from constructor" << std::endl;
-  for (int kl = 0; kl < ROWS; kl++) {
-    std::cout << sum_of_rows[kl] << " ";
-  }
-  std::cout << std::endl;
-  for (int kl = 0; kl < ROWS; kl++) {
-    std::cout << cumsum_of_rows[kl] << " ";
-  }
-  std::cout << std::endl;
-#endif
+  // for(T i: _manager->_p_cum_sums)
+  //   std::cout<<i<<" ,";
+  // std::cout<<std::endl;
 }
 
 // --------------------------------------------------------------------------
@@ -156,56 +118,66 @@ template <typename T> void fastTasep::BasicIteration<T>::fix_boundaries() {
   ASSERT(grid[L + 2] == 0, "Boundaries were affected");
 };
 template <typename T> void fastTasep::BasicIteration<T>::fix_cumsum(int side) {
-  int first_el_index =
-      (side - 1) *
-      N_actions; // find the ROW of the first element that might have changed
-  int I = first_el_index / COLS;
+  // find the ROW of the first element that might have changed
+  int first_el_index = (side - 1) * N_actions;
+  int last_el_index = (side + 2) * N_actions;
+  // int I = first_el_index / COLS;
 
-  sum_of_rows[I] = std::accumulate(propensities.begin() + I * COLS,
-                                   propensities.begin() + (I + 1) * COLS, 0.0);
-  sum_of_rows[I + 1] =
-      std::accumulate(propensities.begin() + (I + 1) * COLS,
-                      propensities.begin() + (I + 2) * COLS, 0.0);
+  _manager->update_single_row_of_index(first_el_index);
+  if (last_el_index != first_el_index)
+    _manager->update_single_row_of_index(last_el_index);
+  _manager->update_cumsum();
+  // sum_of_rows[I] = std::accumulate(propensities.begin() + I * COLS,
+  //                                  propensities.begin() + (I + 1) * COLS,
+  //                                  0.0);
+  // sum_of_rows[I + 1] =
+  //     std::accumulate(propensities.begin() + (I + 1) * COLS,
+  //                     propensities.begin() + (I + 2) * COLS, 0.0);
 
-  for (int temp = I; temp < ROWS; temp++) { // remove temp
-    cumsum_of_rows[temp + 1] = cumsum_of_rows[temp] + sum_of_rows[temp];
-  }
-  // std::cout << std::endl;
+  // for (int temp = I; temp < ROWS; temp++) { // remove temp
+  //   cumsum_of_rows[temp + 1] = cumsum_of_rows[temp] + sum_of_rows[temp];
+  // }
+  // // std::cout << std::endl;
 };
 
-template <typename T> void fastTasep::BasicIteration<T>::set_index() {
-  _INDEX = std::distance(
-      cumsum_of_rows.begin(),
-      std::upper_bound(cumsum_of_rows.begin(), cumsum_of_rows.end(), r2));
+// template <typename T> void fastTasep::BasicIteration<T>::set_index() {
+//   _INDEX = std::distance(
+//       cumsum_of_rows.begin(),
+//       std::upper_bound(cumsum_of_rows.begin(), cumsum_of_rows.end(), r2));
 
-  _index = (_INDEX - 1) * COLS;
-  // std::cout << _index << "    <---INDEX BEFORE" << std::endl;
-  T temp_sum = cumsum_of_rows[_INDEX - 1];
-  // std::cout << "temp_sum, r2  " << temp_sum << "," << r2 << std::endl;
-  while (temp_sum < r2) {
-    // std::cout << "_index, temp_sum, r2 " << _index << ", " << temp_sum << ",
-    // "
-    //           << r2 << std::endl;
-    temp_sum += propensities[_index];
-    _index++;
-  }
-  _index--;
-};
+//   _index = (_INDEX - 1) * COLS;
+//   // std::cout << _index << "    <---INDEX BEFORE" << std::endl;
+//   T temp_sum = cumsum_of_rows[_INDEX - 1];
+//   // std::cout << "temp_sum, r2  " << temp_sum << "," << r2 << std::endl;
+//   while (temp_sum < r2) {
+//     // std::cout << "_index, temp_sum, r2 " << _index << ", " << temp_sum <<
+//     ",
+//     // "
+//     //           << r2 << std::endl;
+//     temp_sum += propensities[_index];
+//     _index++;
+//   }
+//   _index--;
+// };
 
 template <typename T> void fastTasep::BasicIteration<T>::iteration() {
   r1 = dis(gen);
-  r2 = dis(gen) * cumsum_of_rows.back();
-
-  dt = (1.0 / cumsum_of_rows.back()) * log(1 / r1);
+  r2 = dis(gen)* _manager->_p_cum_sums.back();
+  // std::cout<<r1<<" "<<r2<<std::endl;
+  dt = (1.0 / _manager->_p_cum_sums.back()) * log(1 / r1);
   // _index = 0;
 
-  set_index();
+  // // set_index();
+  _index = _manager->find_upper_bound(r2);
+
+  ASSERT(_index < (L+1) * N_actions, "index was bigger than L");
+  ASSERT(_index >= l_ghost * N_actions, "index was less than l_ghost");
 
   _action = _index & 3;
   _side = _index >> 2;
 
   ASSERT(_side != 0, "_side is 0");
-  ASSERT(_side < L+1 , "side is bigger than the microtubule");
+  ASSERT(_side < L + 1, "side is bigger than the microtubule");
 
   switch (_action) {
   case 0:
@@ -235,6 +207,8 @@ template <typename T> void fastTasep::BasicIteration<T>::append_trajectory() {
   SIDE[_iter] = static_cast<u_int16_t>(_side - l_ghost);
 };
 template <typename T> void fastTasep::BasicIteration<T>::simulation() {
+  // std::cout<<"simulation calling manager COLS: "<<_manager->_COLS<<std::endl;
+
   // _iter = ITERS-10;
   // std::cout << "_iter= " << _iter << std::endl;
   // std::cout << "REAL SIM" << std::endl;

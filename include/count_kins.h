@@ -72,7 +72,7 @@ namespace fastTasep {
 template <typename T> class CountKins {
 
 public:
-  CountKins(int L, int ITERS, T kon, T koff, T kstep, T q, T kq);
+  CountKins(int L, int ITERS, T kon, T koff, T kstep, T q, T kq, int COLS);
   void simulation();
   void printme();
 
