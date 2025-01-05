@@ -1,7 +1,7 @@
 #pragma once
 #include <chrono>
-#include <vector>
 #include <iostream>
+#include <vector>
 
 class MyTimer {
     std::chrono::high_resolution_clock::time_point start;
@@ -24,9 +24,9 @@ class MyTimer {
         for (size_t i = 1; i < _laps.size(); ++i) {
             std::cout << std::chrono::duration_cast<std::chrono::duration<double>>(_laps[i] -
                                                                                    _laps[i - 1])
-                             .count()
-                      << ", ";
+                             .count();
+            if (i < _laps.size() - 1) std::cout << ",";
         }
-        std::cout << ";" << std::endl;
+        std::cout << std::endl;
     }
 };

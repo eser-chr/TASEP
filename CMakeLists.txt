@@ -95,12 +95,10 @@ add_subdirectory(external/bucket)
 add_library(
     tasep MODULE
     src/Bindings.cpp
-    src/basic.cpp
-    src/count_kins.cpp
-    src/new_count_kins.cpp
-    src/basiciterations.cpp
-    src/neighbors.cpp
+    src/abstract.cpp
     src/new.cpp
+    src/count_kins.cpp
+    src/neighbors.cpp
 )
 
 # Include directories
@@ -110,7 +108,7 @@ target_include_directories(tasep PRIVATE include)
 # Link pybind11
 target_link_libraries(tasep PRIVATE pybind11::module)
 target_link_libraries(tasep PRIVATE bucket)
-target_compile_definitions(tasep PRIVATE DEBUGB ENABLE_CHECKS TIME_ME)
+# target_compile_definitions(tasep PRIVATE DEBUGB ENABLE_CHECKS TIME_ME)
 target_compile_options(tasep PRIVATE -O3)
 
 
