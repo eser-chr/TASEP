@@ -19,7 +19,9 @@
 template <typename T> class bucket_ref {
 
 private:
-  std::vector<T> foo;
+int _min_row_affecetd, _max_row_affected;
+
+
 
 public:
   int _ROWS;
@@ -30,17 +32,7 @@ public:
   std::vector<T> _p_cum_sums;
   using value_type = T;
 
-//   bucket_ref() : _ROWS(0), _COLS(0), _vector(foo) {}
 
-//   void reset(int ROWS, int COLS, const std::vector<T> &other) {
-//     _ROWS = ROWS;
-//     _COLS = COLS;
-//     _vector = other;
-//     _p_sums.resize(_ROWS);
-//     _p_cum_sums.resize(_ROWS + 1);
-//     update_sum();
-//     update_cumsum();
-//   }
 
   bucket_ref(int ROWS, int COLS, const std::vector<T> &other)
       : _ROWS(ROWS), _COLS(COLS), _vector(other) {
@@ -49,6 +41,8 @@ public:
     _p_cum_sums.resize(_ROWS + 1);
     update_sum();
     update_cumsum();
+    _min_row_affecetd = 0;
+    _max_row_affected = _ROWS;
   }
 
   struct sums {
@@ -87,6 +81,10 @@ public:
     for (size_t i = _COLS * row; i < _COLS * (row + 1); i++) {
       _p_sums[row] += _vector[i];
     }
+    if(row<_min_row_affecetd)
+      _min_row_affecetd = row;
+    if(row>_max_row_affected)
+      _max_row_affected = row;
   }
 
   void update_cumsum() {
@@ -97,10 +95,41 @@ public:
     }
   }
 
-  void update_cumsum_from_row(int row) {
+  void update_cumsum_from_row_on(int row) {
     ROW_CHECK(row >= 0 && row < _ROWS, "Row index out of range");
     for (size_t l_row = row; l_row < _ROWS; l_row++) {
       _p_cum_sums[l_row + 1] = _p_cum_sums[l_row] + _p_sums[l_row];
+    }
+  }
+
+  void refresh_cumsum(){
+    T diff = _p_cum_sums[_max_row_affected + 1];
+    size_t l_row = _min_row_affecetd;
+    for (; l_row < _max_row_affected; l_row++) {
+      _p_cum_sums[l_row + 1] = _p_cum_sums[l_row] + _p_sums[l_row];
+    }
+    diff -= _p_cum_sums[_max_row_affected + 1];
+
+    for(; l_row<_ROWS; l_row++){
+      _p_cum_sums[l_row+1]-=diff;
+    }
+
+  }
+
+  /*
+  Assumes a change of the underlying vector at index that corresponds to a
+  specific row and that one has already used the function update_sum_at_row().
+
+   */
+  void update_cumsum_after_single_change_at_row(int row) {
+    ROW_CHECK(row >= 0 && row < _ROWS, "Row index out of range");
+
+    T diff = _p_cum_sums[row + 1];
+    _p_cum_sums[row + 1] = _p_cum_sums[row] + _p_sums[row];
+    diff -=_p_cum_sums[row + 1];
+
+    for (size_t l_row = row+1; l_row < _ROWS; l_row++) {
+      _p_cum_sums[l_row + 1] = _p_cum_sums[l_row] - diff;
     }
   }
 
@@ -110,7 +139,7 @@ public:
     update_sum_at_row(row);
     diff -= _p_sums[row];
 
-    for (size_t l_row = row + 1; l_row < _ROWS + 1; l_row++) {
+    for (size_t l_row = row + 1; l_row < _ROWS; l_row++) {
       _p_cum_sums[l_row] -= diff;
     }
   }
@@ -155,3 +184,5 @@ public:
     return index;
   }
 };
+
+

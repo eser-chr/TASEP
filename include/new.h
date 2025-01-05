@@ -1,6 +1,6 @@
 #pragma once
 #include "timer.hpp"
-#include "bucket_ref.hpp"
+#include "bucket_ref.h"
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
@@ -9,6 +9,7 @@
 #include <random>
 #include <stdexcept>
 #include <tuple>
+#include <memory>
 #include <vector>
 
 namespace fastTasep {
@@ -27,7 +28,6 @@ public:
 
 protected:
   int L; // 
-
   int ITERS;
   T kon; // _ _ _ + _ _   ->   _ _ _ + + _
   T koff;
@@ -37,18 +37,14 @@ protected:
   std::vector<T> propensities;
   
   int ROWS, COLS;
-  // std::vector<T> sum_of_rows;
-  // std::vector<T> cumsum_of_rows;
-
-  bucket_ref<T> *_manager;
-  
+  std::unique_ptr<bucket_ref<T>> _manager; // manages the cumsum effectively
   std::vector<uint8_t> grid;
 
   std::random_device rd;
   std::mt19937 gen;
   std::uniform_real_distribution<T> dis;
 
-  int _action, _side, _index, _INDEX, temp;
+  int _action, _side, _index, temp;
   int _iter = 0;
   T r1, r2, dt;
   T time = 0.0;
@@ -60,7 +56,6 @@ protected:
   const int N_actions = 4;
 
 private:
-  void set_index();
   void bind(int side);
   void unbind(int side);
   void step(int side);

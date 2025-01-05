@@ -3,7 +3,6 @@
 #include "neighbors.h"
 #include "new.h"
 #include "timer.hpp"
-#include "bucket_ref.hpp"
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>

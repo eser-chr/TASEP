@@ -4,6 +4,9 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
+                "${workspaceFolder}/build/**",
+                "/usr/include",
+                "/usr/local/include",
                 "/home/chris/anaconda3/lib/python3.12/site-packages/pybind11/**",
                 "/home/chris/anaconda3/lib/python3.12/site-packages/pybind11/include/**",
                 "/home/chris/anaconda3/lib/python3.12/site-packages/pybind11/include/pybind11/**"
@@ -13,6 +16,7 @@
             "cStandard": "c17",
             "cppStandard": "gnu++17",
             "intelliSenseMode": "linux-gcc-x64"
+
         }
     ],
     "version": 4

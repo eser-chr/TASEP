@@ -41,16 +41,7 @@ fastTasep::BasicIteration<T>::BasicIteration(int L, int ITERS, T kon, T koff,
     propensities[i] = kon;
   }
 
-  // _manager.reset(ROWS, COLS, propensities);
-  _manager = new bucket_ref(ROWS, COLS, propensities);
-
-  // for(T i: _manager->_vector)
-  //   std::cout<<i<<" ,";
-  // std::cout<<std::endl;
-
-  // for(T i: _manager->_p_cum_sums)
-  //   std::cout<<i<<" ,";
-  // std::cout<<std::endl;
+  _manager = std::make_unique<bucket_ref<T>>(ROWS, COLS, propensities);
 }
 
 // --------------------------------------------------------------------------
@@ -118,47 +109,16 @@ template <typename T> void fastTasep::BasicIteration<T>::fix_boundaries() {
   ASSERT(grid[L + 2] == 0, "Boundaries were affected");
 };
 template <typename T> void fastTasep::BasicIteration<T>::fix_cumsum(int side) {
-  // find the ROW of the first element that might have changed
-  int first_el_index = (side - 1) * N_actions;
-  int last_el_index = (side + 2) * N_actions;
-  // int I = first_el_index / COLS;
 
-  _manager->update_single_row_of_index(first_el_index);
-  if (last_el_index != first_el_index)
-    _manager->update_single_row_of_index(last_el_index);
-  _manager->update_cumsum();
-  // sum_of_rows[I] = std::accumulate(propensities.begin() + I * COLS,
-  //                                  propensities.begin() + (I + 1) * COLS,
-  //                                  0.0);
-  // sum_of_rows[I + 1] =
-  //     std::accumulate(propensities.begin() + (I + 1) * COLS,
-  //                     propensities.begin() + (I + 2) * COLS, 0.0);
-
-  // for (int temp = I; temp < ROWS; temp++) { // remove temp
-  //   cumsum_of_rows[temp + 1] = cumsum_of_rows[temp] + sum_of_rows[temp];
-  // }
-  // // std::cout << std::endl;
+  int I = (side - 1) * N_actions/COLS;
+  int J = (side + 2) * N_actions/COLS;  
+  _manager->update_sum_at_row(I);
+  if (I!=J)
+    _manager->update_sum_at_row(J);
+  _manager->refresh_cumsum();
+  
 };
 
-// template <typename T> void fastTasep::BasicIteration<T>::set_index() {
-//   _INDEX = std::distance(
-//       cumsum_of_rows.begin(),
-//       std::upper_bound(cumsum_of_rows.begin(), cumsum_of_rows.end(), r2));
-
-//   _index = (_INDEX - 1) * COLS;
-//   // std::cout << _index << "    <---INDEX BEFORE" << std::endl;
-//   T temp_sum = cumsum_of_rows[_INDEX - 1];
-//   // std::cout << "temp_sum, r2  " << temp_sum << "," << r2 << std::endl;
-//   while (temp_sum < r2) {
-//     // std::cout << "_index, temp_sum, r2 " << _index << ", " << temp_sum <<
-//     ",
-//     // "
-//     //           << r2 << std::endl;
-//     temp_sum += propensities[_index];
-//     _index++;
-//   }
-//   _index--;
-// };
 
 template <typename T> void fastTasep::BasicIteration<T>::iteration() {
   r1 = dis(gen);
