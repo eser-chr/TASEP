@@ -3,419 +3,158 @@
 #include "neighbors.h"
 #include "new.h"
 #include "timer.hpp"
-#include <pybind11/numpy.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include "utils.hpp"
 
-using namespace std;
-namespace py = pybind11;
+#ifdef TIME_ME
 
 template <typename T>
-py::array_t<T> vector_to_numpy(const std::vector<T> &&vec) {
-  py::array_t<T> result({vec.size()}, {sizeof(T)});
-  auto result_buffer = result.request();
-  T *result_ptr = static_cast<T *>(result_buffer.ptr);
-  std::move(vec.begin(), vec.end(), result_ptr);
-  return result;
+py::tuple iter_sim(int L, int ITERS, T kon, T koff, T kstep, T q, T kq) {
+    MyTimer timer;
+    tasep::BasicIteration<T> sim(L, ITERS, kon, koff, kstep, q, kq);
+    timer.add_lap();
+
+    sim.simulation();
+    timer.add_lap();
+
+    const auto &to_rtn = py::make_tuple(
+        vector_to_numpy(std::move(sim.DATA), ITERS, L), vector_to_numpy(std::move(sim.TIMES)),
+        vector_to_numpy(std::move(sim.ACTION)), vector_to_numpy(std::move(sim.SIDE)));
+    timer.add_lap();
+    timer.print_times();
+    return to_rtn;
 }
 
 template <typename T>
-py::array_t<T> vector_to_numpy(const std::vector<T> &&vec, size_t rows,
-                               size_t cols) {
-  py::array_t<T> result({rows, cols});
-  auto result_buffer = result.request();
-  T *result_ptr = static_cast<T *>(result_buffer.ptr);
-  std::move(vec.begin(), vec.end(), result_ptr);
+py::tuple new_iter_sim(int L, int ITERS, T kon, T koff, T kstep, T q, T kq) {
+    MyTimer timer;
+    fastTasep::BasicIteration<T> sim(L, ITERS, kon, koff, kstep, q, kq);
+    timer.add_lap();
 
-  return result;
+    sim.simulation();
+    timer.add_lap();
+
+    const auto &to_rtn = py::make_tuple(
+        vector_to_numpy(std::move(sim.DATA), ITERS, L), vector_to_numpy(std::move(sim.TIMES)),
+        vector_to_numpy(std::move(sim.ACTION)), vector_to_numpy(std::move(sim.SIDE)));
+    timer.add_lap();
+    timer.print_times();
+
+    return to_rtn;
 }
 
-// -----------------------------------------
-#ifdef TIME_ME
-py::tuple iter_sim(int L, int ITERS, double kon, double koff, double kstep,
-                   double q, double kq, bool verbose = false) {
-  double t1, t2, t3;
-  MyTimer timer1{};
-  tasep::BasicIteration sim(L, ITERS, kon, koff, kstep, q, kq);
-  t1 = timer1.get();
+template <typename T>
+py::tuple kins_time_sim(int L, int ITERS, T kon, T koff, T kstep, T q, T kq) {
+    MyTimer timer;
+    tasep::CountKins<T> sim(L, ITERS, kon, koff, kstep, q, kq);
+    timer.add_lap();
 
-  if (verbose) sim.printme();
+    sim.simulation();
+    timer.add_lap();
 
-  MyTimer timer2{};
-  sim.simulation();
-  t2 = timer2.get();
-
-  MyTimer timer3{};
-  const auto &to_rtn =
-      py::make_tuple(vector_to_numpy(std::move(sim.DATA), ITERS, L),
-                     vector_to_numpy(std::move(sim.TIMES)),
-                     vector_to_numpy(std::move(sim.ACTION)),
-                     vector_to_numpy(std::move(sim.SIDE)));
-  t3 = timer3.get();
-
-  std::cout << "times: " << t1 << "," << t2 << "," << t3 << std::endl;
-  return to_rtn;
+    const auto &to_rtn =
+        py::make_tuple(vector_to_numpy(std::move(sim.KINS)), vector_to_numpy(std::move(sim.TIMES)));
+    timer.add_lap();
+    timer.print_times();
+    return to_rtn;
 }
 
-py::tuple new_iter_sim(int L, int ITERS, double kon, double koff, double kstep,
-                       double q, double kq, bool verbose = false) {
+template <typename T>
+py::tuple neighbors_sim(int L, int ITERS, T kon, T koff, T kstep, T q, T kq) {
+    MyTimer timer;
+    tasep::Neighbors<T> sim(L, ITERS, kon, koff, kstep, q, kq);
+    timer.add_lap();
 
-  double t1, t2, t3;
-  MyTimer timer1{};
-  fastTasep::BasicIteration<double> sim(L, ITERS, kon, koff, kstep, q, kq);
-  t1 = timer1.get();
+    sim.simulation();
+    t2 = timer2.get();
+    timer.add_lap();
 
-  if (verbose) sim.printme();
+    const auto &to_rtn = py::make_tuple(
+        vector_to_numpy(std::move(sim.NEIGHBORS)), vector_to_numpy(std::move(sim.TIMES)),
+        vector_to_numpy(std::move(sim.ACTION)), vector_to_numpy(std::move(sim.SIDE)));
+    timer.add_lap();
+    timer.print_times();
 
-  MyTimer timer2{};
-  sim.simulation();
-  t2 = timer2.get();
-
-  MyTimer timer3{};
-  const auto &to_rtn =
-      py::make_tuple(vector_to_numpy(std::move(sim.DATA), ITERS, L),
-                     vector_to_numpy(std::move(sim.TIMES)),
-                     vector_to_numpy(std::move(sim.ACTION)),
-                     vector_to_numpy(std::move(sim.SIDE)));
-  t3 = timer3.get();
-
-  std::cout << "times: " << t1 << "," << t2 << "," << t3 << std::endl;
-  return to_rtn;
-
-  // std::cout<<"Now it works "<<t1<<std::endl;
+    return to_rtn;
 }
+
+template <typename T>
+py::tuple nneighbors_sim(int L, int ITERS, T kon, T koff, T kstep, T q, T kq) {
+    MyTimer timer;
+    tasep::NNeighbors<T> sim(L, ITERS, kon, koff, kstep, q, kq);
+    timer.add_lap();
+
+    sim.simulation();
+    timer.add_lap();
+
+    const auto &to_rtn = py::make_tuple(
+        vector_to_numpy(std::move(sim.NEIGHBORS)), vector_to_numpy(std::move(sim.TIMES)),
+        vector_to_numpy(std::move(sim.ACTION)), vector_to_numpy(std::move(sim.SIDE)));
+    timer.add_lap();
+    timer.print_times();
+    return to_rtn;
+}
+
+//============================================
 #else
-py::tuple iter_sim(int L, int ITERS, double kon, double koff, double kstep,
-                   double q, double kq, bool verbose = false) {
-  tasep::BasicIteration sim(L, ITERS, kon, koff, kstep, q, kq);
-  if (verbose) sim.printme();
-  sim.simulation();
-  return py::make_tuple(vector_to_numpy(std::move(sim.DATA), ITERS, L),
-                        vector_to_numpy(std::move(sim.TIMES)),
-                        vector_to_numpy(std::move(sim.ACTION)),
-                        vector_to_numpy(std::move(sim.SIDE)));
+//============================================
+
+template <typename T>
+py::tuple iter_sim(int L, int ITERS, T kon, T koff, T kstep, T q, T kq) {
+    tasep::BasicIteration<T> sim(L, ITERS, kon, koff, kstep, q, kq);
+    sim.simulation();
+    return py::make_tuple(
+        vector_to_numpy(std::move(sim.DATA), ITERS, L), vector_to_numpy(std::move(sim.TIMES)),
+        vector_to_numpy(std::move(sim.ACTION)), vector_to_numpy(std::move(sim.SIDE)));
 }
 
-py::tuple new_iter_sim(int L, int ITERS, double kon, double koff, double kstep,
-                       double q, double kq, bool verbose = false) {
-  fastTasep::BasicIteration<double> sim(L, ITERS, kon, koff, kstep, q, kq);
-  if (verbose) sim.printme();
-  sim.simulation();
-  return py::make_tuple(vector_to_numpy(std::move(sim.DATA), ITERS, L),
-                        vector_to_numpy(std::move(sim.TIMES)),
-                        vector_to_numpy(std::move(sim.ACTION)),
-                        vector_to_numpy(std::move(sim.SIDE)));
+template <typename T>
+py::tuple new_iter_sim(int L, int ITERS, T kon, T koff, T kstep, T q, T kq) {
+    fastTasep::BasicIteration<T> sim(L, ITERS, kon, koff, kstep, q, kq);
+    sim.simulation();
+    return py::make_tuple(
+        vector_to_numpy(std::move(sim.DATA), ITERS, L), vector_to_numpy(std::move(sim.TIMES)),
+        vector_to_numpy(std::move(sim.ACTION)), vector_to_numpy(std::move(sim.SIDE)));
 }
+
+template <typename T>
+py::tuple kins_time_sim(int L, int ITERS, T kon, T koff, T kstep, T q, T kq) {
+    tasep::CountKins<T> sim(L, ITERS, kon, koff, kstep, q, kq);
+    sim.simulation();
+    return py::make_tuple(vector_to_numpy(std::move(sim.KINS)),
+                          vector_to_numpy(std::move(sim.TIMES)));
+}
+
+template <typename T>
+py::tuple neighbors_sim(int L, int ITERS, T kon, T koff, T kstep, T q, T kq) {
+    tasep::Neighbors<T> sim(L, ITERS, kon, koff, kstep, q, kq);
+    sim.simulation();
+    return py::make_tuple(
+        vector_to_numpy(std::move(sim.NEIGHBORS)), vector_to_numpy(std::move(sim.TIMES)),
+        vector_to_numpy(std::move(sim.ACTION)), vector_to_numpy(std::move(sim.SIDE)));
+}
+
+py::tuple nneighbors_sim(int L, int ITERS, T kon, T koff, T kstep, T q, double kq) {
+    tasep::NNeighbors<T> sim(L, ITERS, kon, koff, kstep, q, kq);
+    sim.simulation();
+    return py::make_tuple(
+        vector_to_numpy(std::move(sim.NEIGHBORS)), vector_to_numpy(std::move(sim.TIMES)),
+        vector_to_numpy(std::move(sim.ACTION)), vector_to_numpy(std::move(sim.SIDE)));
+}
+
 #endif
 
-// -----------------------------------------------------
-// -----------------------------------------------------
-
-#ifdef TIME_ME
-py::tuple Dkins_time_sim(int L, int ITERS, double kon, double koff,
-                         double kstep, double q, double kq,
-                         bool verbose = false) {
-  double t1, t2, t3;
-  MyTimer timer1{};
-  tasep::CountKins<double> sim(L, ITERS, kon, koff, kstep, q, kq);
-  t1 = timer1.get();
-
-  // if (verbose) {
-  //   sim.printme();
-  // }
-  MyTimer timer2{};
-  sim.simulation();
-  t2 = timer2.get();
-
-  MyTimer timer3{};
-  const auto &to_rtn = py::make_tuple(vector_to_numpy(std::move(sim.KINS)),
-                                      vector_to_numpy(std::move(sim.TIMES)));
-  t3 = timer3.get();
-
-  std::cout << "times: " << t1 << "," << t2 << "," << t3 << std::endl;
-  return to_rtn;
-}
-
-py::tuple Fkins_time_sim(int L, int ITERS, float kon, float koff, float kstep,
-                         float q, float kq, bool verbose = false) {
-  double t1, t2, t3;
-  MyTimer timer1{};
-  tasep::CountKins<float> sim(L, ITERS, kon, koff, kstep, q, kq);
-  t1 = timer1.get();
-
-  // if (verbose) {
-  //   sim.printme();
-  // }
-  MyTimer timer2{};
-  sim.simulation();
-  t2 = timer2.get();
-
-  MyTimer timer3{};
-  const auto &to_rtn = py::make_tuple(vector_to_numpy(std::move(sim.KINS)),
-                                      vector_to_numpy(std::move(sim.TIMES)));
-  t3 = timer3.get();
-
-  std::cout << "times: " << t1 << "," << t2 << "," << t3 << std::endl;
-  return to_rtn;
-}
-
-// py::tuple Dnew_kins_time_sim(int L, int ITERS, double kon, double koff,
-//                          double kstep, double q, double kq,
-//                          bool verbose = false) {
-//   double t1, t2, t3;
-//   MyTimer timer1{};
-//   fastTasep::CountKins<double> sim(L, ITERS, kon, koff, kstep, q, kq, COLS);
-//   t1 = timer1.get();
-
-//   // if (verbose) {
-//   //   sim.printme();
-//   // }
-//   MyTimer timer2{};
-//   sim.simulation();
-//   t2 = timer2.get();
-
-//   MyTimer timer3{};
-//   const auto &to_rtn = py::make_tuple(vector_to_numpy(std::move(sim.KINS)),
-//                                       vector_to_numpy(std::move(sim.TIMES)));
-//   t3 = timer3.get();
-
-//   std::cout << "times: " << t1 << "," << t2 << "," << t3 << std::endl;
-//   return to_rtn;
-// }
-
-// py::tuple Fnew_kins_time_sim(int L, int ITERS, float kon, float koff, float kstep,
-//                          float q, float kq, bool verbose = false) {
-//   double t1, t2, t3;
-//   MyTimer timer1{};
-//   fastTasep::CountKins<float> sim(L, ITERS, kon, koff, kstep, q, kq);
-//   t1 = timer1.get();
-
-//   // if (verbose) {
-//   //   sim.printme();
-//   // }
-//   MyTimer timer2{};
-//   sim.simulation();
-//   t2 = timer2.get();
-
-//   MyTimer timer3{};
-//   const auto &to_rtn = py::make_tuple(vector_to_numpy(std::move(sim.KINS)),
-//                                       vector_to_numpy(std::move(sim.TIMES)));
-//   t3 = timer3.get();
-
-//   std::cout << "times: " << t1 << "," << t2 << "," << t3 << std::endl;
-//   return to_rtn;
-// }
-
-#else
-py::tuple Dkins_time_sim(int L, int ITERS, double kon, double koff,
-                         double kstep, double q, double kq,
-                         bool verbose = false) {
-  tasep::CountKins<double> sim(L, ITERS, kon, koff, kstep, q, kq);
-  if (verbose) sim.printme();
-  sim.simulation();
-  return py::make_tuple(vector_to_numpy(std::move(sim.KINS)),
-                        vector_to_numpy(std::move(sim.TIMES)));
-}
-
-py::tuple Fkins_time_sim(int L, int ITERS, float kon, float koff, float kstep,
-                         double q, float kq) {
-  tasep::CountKins<float> sim(L, ITERS, kon, koff, kstep, q, kq);
-  sim.simulation();
-  return py::make_tuple(vector_to_numpy(std::move(sim.KINS)),
-                        vector_to_numpy(std::move(sim.TIMES)));
-}
-// py::tuple Dnew_kins_time_sim(int L, int ITERS, double kon, double koff,
-//                          double kstep, double q, double kq,
-//                          bool verbose, int COLS) {
-//   fastTasep::CountKins<double> sim(L, ITERS, kon, koff, kstep, q, kq, COLS);
-//   if (verbose) sim.printme();
-//   sim.simulation();
-//   return py::make_tuple(vector_to_numpy(std::move(sim.KINS)),
-//                         vector_to_numpy(std::move(sim.TIMES)));
-// }
-
-// py::tuple Fnew_kins_time_sim(int L, int ITERS, float kon, float koff, float kstep,
-//                          double q, float kq, int COLS) {
-//   fastTasep::CountKins<float> sim(L, ITERS, kon, koff, kstep, q, kq, COLS);
-//   sim.simulation();
-//   return py::make_tuple(vector_to_numpy(std::move(sim.KINS)),
-//                         vector_to_numpy(std::move(sim.TIMES)));
-// }
-#endif
-
-// -----------------------------------------------------
-// NEIGHBORS
-
-#ifdef TIME_ME
-py::tuple Dneighbors_sim(int L, int ITERS, double kon, double koff,
-                         double kstep, double q, double kq,
-                         bool verbose = false) {
-  double t1, t2, t3;
-  MyTimer timer1{};
-  tasep::Neighbors<double> sim(L, ITERS, kon, koff, kstep, q, kq);
-  t1 = timer1.get();
-
-  // if (verbose) {
-  //   sim.printme();
-  // }
-  MyTimer timer2{};
-  sim.simulation();
-  t2 = timer2.get();
-
-  MyTimer timer3{};
-  const auto &to_rtn = py::make_tuple(vector_to_numpy(std::move(sim.NEIGHBORS)),
-                                      vector_to_numpy(std::move(sim.TIMES)),
-                                      vector_to_numpy(std::move(sim.ACTION)),
-                                      vector_to_numpy(std::move(sim.SIDE)));
-  t3 = timer3.get();
-
-  std::cout << "times: " << t1 << "," << t2 << "," << t3 << std::endl;
-  return to_rtn;
-}
-
-py::tuple Fneighbors_sim(int L, int ITERS, float kon, float koff, float kstep,
-                         float q, float kq, bool verbose = false) {
-  double t1, t2, t3;
-  MyTimer timer1{};
-  tasep::Neighbors<float> sim(L, ITERS, kon, koff, kstep, q, kq);
-  t1 = timer1.get();
-
-  // if (verbose) {
-  //   sim.printme();
-  // }
-  MyTimer timer2{};
-  sim.simulation();
-  t2 = timer2.get();
-
-  MyTimer timer3{};
-  const auto &to_rtn = py::make_tuple(vector_to_numpy(std::move(sim.NEIGHBORS)),
-                                      vector_to_numpy(std::move(sim.TIMES)),
-                                      vector_to_numpy(std::move(sim.ACTION)),
-                                      vector_to_numpy(std::move(sim.SIDE)));
-  t3 = timer3.get();
-
-  std::cout << "times: " << t1 << "," << t2 << "," << t3 << std::endl;
-  return to_rtn;
-}
-
-#else
-py::tuple Dneighbors_sim(int L, int ITERS, double kon, double koff,
-                         double kstep, double q, double kq,
-                         bool verbose = false) {
-  tasep::Neighbors<double> sim(L, ITERS, kon, koff, kstep, q, kq);
-  if (verbose) sim.printme();
-  sim.simulation();
-  return py::make_tuple(vector_to_numpy(std::move(sim.NEIGHBORS)),
-                        vector_to_numpy(std::move(sim.TIMES)),
-                        vector_to_numpy(std::move(sim.ACTION)),
-                        vector_to_numpy(std::move(sim.SIDE)));
-}
-
-py::tuple Fneighbors_sim(int L, int ITERS, float kon, float koff, float kstep,
-                         double q, float kq) {
-  tasep::Neighbors<float> sim(L, ITERS, kon, koff, kstep, q, kq);
-  sim.simulation();
-  return py::make_tuple(vector_to_numpy(std::move(sim.NEIGHBORS)),
-                        vector_to_numpy(std::move(sim.TIMES)),
-                        vector_to_numpy(std::move(sim.ACTION)),
-                        vector_to_numpy(std::move(sim.SIDE)));
-}
-#endif
-
-//===========================================================================
-//===========================================================================
-//===========================================================================
-#ifdef TIME_ME
-py::tuple Dnneighbors_sim(int L, int ITERS, double kon, double koff,
-                          double kstep, double q, double kq,
-                          bool verbose = false) {
-  double t1, t2, t3;
-  MyTimer timer1{};
-  tasep::NNeighbors<double> sim(L, ITERS, kon, koff, kstep, q, kq);
-  t1 = timer1.get();
-
-  // if (verbose) {
-  //   sim.printme();
-  // }
-  MyTimer timer2{};
-  sim.simulation();
-  t2 = timer2.get();
-
-  MyTimer timer3{};
-  const auto &to_rtn = py::make_tuple(vector_to_numpy(std::move(sim.NEIGHBORS)),
-                                      vector_to_numpy(std::move(sim.TIMES)),
-                                      vector_to_numpy(std::move(sim.ACTION)),
-                                      vector_to_numpy(std::move(sim.SIDE)));
-  t3 = timer3.get();
-
-  std::cout << "times: " << t1 << "," << t2 << "," << t3 << std::endl;
-  return to_rtn;
-}
-
-py::tuple Fnneighbors_sim(int L, int ITERS, float kon, float koff, float kstep,
-                          float q, float kq, bool verbose = false) {
-  double t1, t2, t3;
-  MyTimer timer1{};
-  tasep::NNeighbors<float> sim(L, ITERS, kon, koff, kstep, q, kq);
-  t1 = timer1.get();
-
-  // if (verbose) {
-  //   sim.printme();
-  // }
-  MyTimer timer2{};
-  sim.simulation();
-  t2 = timer2.get();
-
-  MyTimer timer3{};
-  const auto &to_rtn = py::make_tuple(vector_to_numpy(std::move(sim.NEIGHBORS)),
-                                      vector_to_numpy(std::move(sim.TIMES)),
-                                      vector_to_numpy(std::move(sim.ACTION)),
-                                      vector_to_numpy(std::move(sim.SIDE)));
-  t3 = timer3.get();
-
-  std::cout << "times: " << t1 << "," << t2 << "," << t3 << std::endl;
-  return to_rtn;
-}
-
-#else
-py::tuple Dnneighbors_sim(int L, int ITERS, double kon, double koff,
-                          double kstep, double q, double kq,
-                          bool verbose = false) {
-  tasep::NNeighbors<double> sim(L, ITERS, kon, koff, kstep, q, kq);
-  if (verbose) sim.printme();
-  sim.simulation();
-  return py::make_tuple(vector_to_numpy(std::move(sim.NEIGHBORS)),
-                        vector_to_numpy(std::move(sim.TIMES)),
-                        vector_to_numpy(std::move(sim.ACTION)),
-                        vector_to_numpy(std::move(sim.SIDE)));
-}
-
-py::tuple Fnneighbors_sim(int L, int ITERS, float kon, float koff, float kstep,
-                          double q, float kq) {
-  tasep::NNeighbors<float> sim(L, ITERS, kon, koff, kstep, q, kq);
-  sim.simulation();
-  return py::make_tuple(vector_to_numpy(std::move(sim.NEIGHBORS)),
-                        vector_to_numpy(std::move(sim.TIMES)),
-                        vector_to_numpy(std::move(sim.ACTION)),
-                        vector_to_numpy(std::move(sim.SIDE)));
-}
-#endif
-
-//--------------=================================
-//--------------=================================
-//--------------=================================
+//=================================
+//=================================
 
 PYBIND11_MODULE(tasep, m) {
-  m.def("itersim", &iter_sim, "A function to run the simulation");
-  m.def("kins_time", &Dkins_time_sim, "Returns only the total number of kins");
-  m.def("Fkins_time", &Fkins_time_sim, "Returns only the total number of kins");
-  // m.def("new_kins_time", &Dnew_kins_time_sim, "Returns only the total number of kins");
-  // m.def("Fnew_kins_time", &Fnew_kins_time_sim, "Returns only the total number of kins");
-  m.def("neighbors", &Dneighbors_sim, "Returns only the total number of kins");
-  m.def("Fneighbors", &Fneighbors_sim, "Returns only the total number of kins");
-  m.def("nneighbors", &Dnneighbors_sim,
-        "Returns only the total number of kins");
-  m.def("Fnneighbors", &Fnneighbors_sim,
-        "Returns only the total number of kins");
-  m.def("tryme", &new_iter_sim, "Returns only the total number of kins");
+    m.def("D_itersim", &iter_sim<double>, "A function to run the simulation");
+    m.def("F_itersim", &iter_sim<float>, "A function to run the simulation");
+    m.def("D_kins_time", &kins_time_sim<double>, "Returns only the total number of kins");
+    m.def("F_kins_time", &kins_time_sim<float>, "Returns only the total number of kins");
+    m.def("D_neighbors", &neighbors_sim<double>, "Returns only the total number of kins");
+    m.def("F_neighbors", &neighbors_sim<float>, "Returns only the total number of kins");
+    m.def("D_nneighbors", &nneighbors_sim<double>, "Returns only the total number of kins");
+    m.def("F_nneighbors", &nneighbors_sim<float>, "Returns only the total number of kins");
+    m.def("D_new_itersim", &new_iter_sim<double>, "Returns only the total number of kins");
+    m.def("F_new_itersim", &new_iter_sim<float>, "Returns only the total number of kins");
 }

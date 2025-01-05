@@ -7,10 +7,7 @@
                 "${workspaceFolder}/external/**",
                 "${workspaceFolder}/build/**",
                 "/usr/include",
-                "/usr/local/include",
-                "/home/chris/anaconda3/lib/python3.12/site-packages/pybind11/**",
-                "/home/chris/anaconda3/lib/python3.12/site-packages/pybind11/include/**",
-                "/home/chris/anaconda3/lib/python3.12/site-packages/pybind11/include/pybind11/**"
+                "/usr/local/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/g++",
