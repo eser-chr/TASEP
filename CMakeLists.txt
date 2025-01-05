@@ -96,8 +96,8 @@ add_library(
     tasep MODULE
     src/Bindings.cpp
     src/abstract.cpp
-    src/new.cpp
-    src/count_kins.cpp
+    src/full.cpp
+    src/kins_only.cpp
     src/neighbors.cpp
 )
 

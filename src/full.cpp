@@ -1,4 +1,4 @@
-#include "new.h"
+#include "derived.hpp"
 
 template <typename T>
 fastTasep::BasicIteration<T>::BasicIteration(int L, int ITERS, T kon, T koff, T kstep, T q, T kq)

@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "bucket/bucket.h"
-#include "debug_utils.h"
+#include "debug_utils.hpp"
 
 namespace fastTasep {
 template <typename T>

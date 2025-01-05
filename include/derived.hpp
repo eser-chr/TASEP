@@ -6,7 +6,7 @@
 
 #include "abstract.hpp"
 #include "bucket/bucket.h"
-#include "debug_utils.h"
+#include "debug_utils.hpp"
 
 namespace fastTasep {
 
