@@ -68,9 +68,8 @@
 # FOR WORKSTATION
 
 cmake_minimum_required(VERSION 3.1)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
-# Set project name
-project(tasep)
+project(tasep LANGUAGES C CXX)
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
 # Find Python interpreter and extract version information
 find_package(PythonInterp REQUIRED)
@@ -90,6 +89,8 @@ endif()
 # Find pybind11
 find_package(pybind11 REQUIRED)
 
+add_subdirectory(external/bucket)
+
 # Specify the source files and create the library
 add_library(
     tasep MODULE
@@ -108,13 +109,14 @@ target_include_directories(tasep PRIVATE include)
 
 # Link pybind11
 target_link_libraries(tasep PRIVATE pybind11::module)
-target_compile_definitions(tasep PRIVATE DEBUGB)
-target_compile_definitions(tasep PRIVATE TIME_ME)
+target_link_libraries(tasep PRIVATE bucket)
+target_compile_definitions(tasep PRIVATE DEBUGB ENABLE_CHECKS TIME_ME)
+target_compile_options(tasep PRIVATE -O3)
 
 
 
 # Set module properties dynamically based on the platform
-if (WIN32)
+if(WIN32)
     set_target_properties(tasep PROPERTIES SUFFIX ".pyd")
 else()
     set_target_properties(tasep PROPERTIES PREFIX "" SUFFIX ".so")
@@ -135,6 +137,6 @@ message(STATUS "Python site-packages: ${PYTHON_SITE_PACKAGES}")
 
 install(TARGETS tasep
     LIBRARY DESTINATION ${PYTHON_SITE_PACKAGES}
-)  
+)
 
 

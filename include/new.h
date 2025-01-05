@@ -1,14 +1,9 @@
 #pragma once
 #include "timer.hpp"
-#include "bucket_ref.h"
-#include <algorithm>
-#include <cassert>
-#include <cstdlib>
+#include "bucket/bucket.h"
 #include <iostream>
-#include <numeric> // For partial sum
 #include <random>
 #include <stdexcept>
-#include <tuple>
 #include <memory>
 #include <vector>
 
@@ -37,7 +32,7 @@ protected:
   std::vector<T> propensities;
   
   int ROWS, COLS;
-  std::unique_ptr<bucket_ref<T>> _manager; // manages the cumsum effectively
+  std::unique_ptr<bucket<T>> _manager; // manages the cumsum effectively
   std::vector<uint8_t> grid;
 
   std::random_device rd;

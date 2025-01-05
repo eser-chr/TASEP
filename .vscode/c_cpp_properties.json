@@ -4,6 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
+                "${workspaceFolder}/external/**",
                 "${workspaceFolder}/build/**",
                 "/usr/include",
                 "/usr/local/include",

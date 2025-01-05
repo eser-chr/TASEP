@@ -1,9 +1,4 @@
 #include "new.h"
-#include "timer.hpp"
-
-#include <cstdlib> // for abort()
-#include <iostream>
-
 #ifdef DEBUGB
 #define ASSERT(condition, message)                                             \
   do {                                                                         \
@@ -41,7 +36,7 @@ fastTasep::BasicIteration<T>::BasicIteration(int L, int ITERS, T kon, T koff,
     propensities[i] = kon;
   }
 
-  _manager = std::make_unique<bucket_ref<T>>(ROWS, COLS, propensities);
+  _manager = std::make_unique<bucket<T>>(ROWS, COLS, propensities);
 }
 
 // --------------------------------------------------------------------------
