@@ -23,6 +23,21 @@ class BasicIteration : public AbstractIteration<T> {
    private:
     void append_trajectory();
 };
+template <typename T>
+class Profile : public AbstractIteration<T> {
+   public:
+    Profile(int L, int ITERS, T kon, T koff, T kstep, T q, T kq);
+
+    std::vector<uint64_t> DATA;
+    size_t iter_equil = 0;
+    T t_equil = 0.0;
+    T t_final = 0.0;
+
+   private:
+    bool is_equil_set = false;
+    T T_equil();
+    void append_trajectory();
+};
 
 template <typename T>
 class CountKins : public AbstractIteration<T> {
@@ -32,7 +47,7 @@ class CountKins : public AbstractIteration<T> {
     std::vector<T> TIMES;
 
    private:
-    uint16_t TOTAL_KINS=0;
+    uint16_t TOTAL_KINS = 0;
     void bind(int side) override;
     void unbind(int side) override;
     void step(int side) override;

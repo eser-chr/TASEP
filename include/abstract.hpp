@@ -34,7 +34,7 @@ class AbstractIteration {
     std::uniform_real_distribution<T> dis;
 
     int _action, _side, _index, temp;
-    int _iter = 0;
+    size_t _iter = 0;
     T r1, r2, dt;
     T time = 0.0;
 

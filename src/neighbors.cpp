@@ -9,6 +9,7 @@ fastTasep::Neighbors<T>::Neighbors(int L, int ITERS, T kon, T koff, T kstep, T q
     SIDE.resize(ITERS);
 }
 
+
 template <typename T>
 fastTasep::NearestNeighbor<T>::NearestNeighbor(int L, int ITERS, T kon, T koff, T kstep, T q, T kq)
     : AbstractIteration<T>(L, ITERS, kon, koff, kstep, q, kq) {
