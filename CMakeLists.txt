@@ -61,8 +61,8 @@ target_link_libraries(neighbors PRIVATE bucket)
 target_link_libraries(tasep_profile PRIVATE pybind11::module)
 target_link_libraries(tasep_profile PRIVATE bucket)
 
-# target_compile_definitions(tasep PRIVATE DEBUGB ENABLE_CHECKS TIME_ME)
-target_compile_options(tasep PRIVATE -O3)
+target_compile_definitions(tasep PRIVATE ENABLE_CHECKS TIME_ME)
+target_compile_options(tasep PRIVATE -O3 -march=native)
 target_compile_options(neighbors PRIVATE -O3)
 target_compile_options(tasep_profile PRIVATE -O3)
 

@@ -12,6 +12,7 @@ template <typename T>
 class AbstractIteration {
    public:
     AbstractIteration(int L, int ITERS, T kon, T koff, T kstep, T q, T kq);
+    virtual ~AbstractIteration() = default;
     void simulation();
     void printme();
 
@@ -26,6 +27,7 @@ class AbstractIteration {
     std::vector<T> propensities;
 
     int ROWS, COLS;
+    double Nactions_per_col;
     std::unique_ptr<bucket<T>> _manager;  // manages the cumsum effectively
     std::vector<uint8_t> grid;
 
@@ -40,21 +42,34 @@ class AbstractIteration {
 
     enum ACTION { BIND = 0, UNBIND = 1, STEP = 2, DEACTIVATE = 3 };
     const int l_ghost = 1;
-    int r_ghost = 2;
+    const int r_ghost = 2;
     const int ghost = l_ghost + r_ghost;
     const int N_actions = 4;
     virtual void bind(int side);
     virtual void unbind(int side);
     virtual void step(int side);
+    virtual void deactivate(int side);
+    using action_func = void (AbstractIteration<T>::*)(int);
+
+    static const std::array<action_func, 4> actions;
 
    private:
-    void deactivate(int side);
-
-    void fix_boundaries();
-    void fix_cumsum(int side);
+    void fixBoundaries();
+    void fixCumsum(int side);
+    inline void executeAction(int action, int side) { (this->*actions[action])(side); }
 
     void iteration();
     virtual void append_trajectory() = 0;
-
 };
+
+
+template <typename T>
+const std::array<typename AbstractIteration<T>::action_func, 4> AbstractIteration<T>::actions = {
+    &AbstractIteration<T>::bind,
+    &AbstractIteration<T>::unbind,
+    &AbstractIteration<T>::step,
+    &AbstractIteration<T>::deactivate
+};
+
+
 };  // namespace fastTasep

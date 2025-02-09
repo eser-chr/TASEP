@@ -2,11 +2,13 @@
 
 #include <memory>
 #include <random>
+#include <span>
 #include <vector>
 
 #include "abstract.hpp"
 #include "bucket/bucket.h"
 #include "debug_utils.hpp"
+#include "memory_pool.hpp"
 
 namespace fastTasep {
 
@@ -14,8 +16,10 @@ template <typename T>
 class BasicIteration : public AbstractIteration<T> {
    public:
     BasicIteration(int L, int ITERS, T kon, T koff, T kstep, T q, T kq);
+    // BasicIteration(int L, int ITERS, T kon, T koff, T kstep, T q, T kq, MemoryPool* pool);
 
     std::vector<uint8_t> DATA;
+    // std::span<uint8_t> DATA;
     std::vector<T> TIMES;
     std::vector<uint8_t> ACTION;
     std::vector<uint16_t> SIDE;

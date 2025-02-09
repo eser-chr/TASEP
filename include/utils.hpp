@@ -24,3 +24,31 @@ py::array_t<T> vector_to_numpy(std::vector<T> &&vec, size_t rows,
 
   return result;
 }
+
+template <typename T, typename Allocator>
+py::array_t<T> vector_to_numpy(std::vector<T, Allocator>&& vec,
+                               size_t rows, size_t cols,
+                               py::handle base) {
+    T* data_ptr = vec.data();
+    return py::array_t<T>(
+        {rows, cols},                  // shape
+        {cols * sizeof(T), sizeof(T)}, // strides (row-major)
+        data_ptr,                      // pointer to data
+        base                           // base object: the capsule
+    );
+}
+
+template <typename T>
+py::array_t<T> vector_to_numpy(T* data_ptr, 
+                               size_t rows, size_t cols,
+                               py::handle base) {
+    // T* data_ptr = vec.data();
+    return py::array_t<T>(
+        {rows, cols},                  // shape
+        {cols * sizeof(T), sizeof(T)}, // strides (row-major)
+        data_ptr,                      // pointer to data
+        base                           // base object: the capsule
+    );
+}
+
+

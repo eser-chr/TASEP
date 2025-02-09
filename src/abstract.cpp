@@ -11,11 +11,13 @@ fastTasep::AbstractIteration<T>::AbstractIteration(int L, int ITERS, T kon, T ko
       q(q),
       kq(kq),
       gen(std::random_device{}()),
-      dis(0.0, 1.0) {
+      dis(0.0, 1.0)
+      {
 
     int total_size = 4 * (L + ghost);
     COLS = std::ceil(std::sqrt(total_size) / std::sqrt(2));
     ROWS = total_size / COLS + 2;
+    Nactions_per_col = static_cast<double>(N_actions) / COLS;
 
     grid.resize(L + ghost, 0);
     propensities.resize(ROWS * COLS, 0.0);
@@ -58,7 +60,7 @@ void fastTasep::AbstractIteration<T>::unbind(int side) {
     propensities[temp + UNBIND] = 0.0;
     propensities[temp + STEP] = 0.0;
     propensities[temp + DEACTIVATE] = kq;
-    grid[side] = 0;
+    grid[side] = static_cast<uint8_t>(0);
 }
 template <typename T>
 void fastTasep::AbstractIteration<T>::step(int side) {
@@ -75,8 +77,8 @@ void fastTasep::AbstractIteration<T>::step(int side) {
     propensities[temp + UNBIND + N_actions] = koff;
     propensities[temp + STEP + N_actions] = (T)kstep * (1 - grid[side + 2]);
     propensities[temp + DEACTIVATE + N_actions] = 0.0;
-    grid[side] = 0;
-    grid[side + 1] = 1;
+    grid[side] = static_cast<uint8_t>(0);
+    grid[side + 1] = static_cast<uint8_t>(1);
 }
 template <typename T>
 void fastTasep::AbstractIteration<T>::deactivate(int side) {
@@ -88,22 +90,21 @@ void fastTasep::AbstractIteration<T>::deactivate(int side) {
     propensities[temp + DEACTIVATE] = 0;
 }
 template <typename T>
-void fastTasep::AbstractIteration<T>::fix_boundaries() {
+void fastTasep::AbstractIteration<T>::fixBoundaries() {
     std::fill(propensities.begin(), propensities.begin() + l_ghost * N_actions, 0.0);
     std::fill(propensities.begin() + (L + l_ghost) * N_actions,
               propensities.begin() + (L + ghost) * N_actions, 0.0);
-    grid[0] = 0;
-    grid[L + 1] = 0;
+    grid[0] = static_cast<uint8_t>(0);
+    grid[L + 1] = static_cast<uint8_t>(0);
     ASSERT(grid[L + 2] == 0, "Boundaries were affected");
 };
 template <typename T>
-void fastTasep::AbstractIteration<T>::fix_cumsum(int side) {
-    int I = (side - 1) * N_actions / COLS;
-    int J = (side + 2) * N_actions / COLS;
+void fastTasep::AbstractIteration<T>::fixCumsum(int side) {
+    int I = static_cast<int>((side -1) * Nactions_per_col);
+    int J = static_cast<int>((side + 2) * Nactions_per_col);
     _manager->update_sum_at_row(I);
     if (I != J) _manager->update_sum_at_row(J);
     _manager->refresh_cumsum();
-    // _manager->update_cumsum();
 };
 
 template <typename T>
@@ -120,25 +121,10 @@ void fastTasep::AbstractIteration<T>::iteration() {
     ASSERT(_side != 0, "_side is 0");
     ASSERT(_side < L + 1, "side is bigger than the microtubule");
 
-    switch (_action) {
-        case 0:
-            bind(_side);
-            break;
-        case 1:
-            unbind(_side);
-            break;
-        case 2:
-            step(_side);
-            break;
-        case 3:
-            deactivate(_side);
-            break;
-        default:
-            throw std::runtime_error("An error occurred in switch statement");
-    }
 
-    fix_boundaries();
-    fix_cumsum(_side);
+    executeAction(_action, _side);
+    fixBoundaries();
+    fixCumsum(_side);
 };
 
 template <typename T>
