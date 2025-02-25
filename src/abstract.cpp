@@ -10,8 +10,9 @@ fastTasep::AbstractIteration<T>::AbstractIteration(int L, int ITERS, T kon, T ko
       kstep(kstep),
       q(q),
       kq(kq),
-      gen(std::random_device{}()),
-      dis(0.0, 1.0)
+      _rng(std::make_unique<PCGRNG<T>>())
+    //   gen(std::random_device{}()),
+    //   dis(0.0, 1.0)
       {
 
     int total_size = 4 * (L + ghost);
@@ -109,8 +110,12 @@ void fastTasep::AbstractIteration<T>::fixCumsum(int side) {
 
 template <typename T>
 void fastTasep::AbstractIteration<T>::iteration() {
-    r1 = dis(gen);
-    r2 = dis(gen) * _manager->_p_cum_sums.back();
+    // r1 = dis(gen);
+    // r2 = dis(gen) * _manager->_p_cum_sums.back();
+
+    r1 = _rng->random();
+    r2 = _rng->random();
+    r2 *= _manager->_p_cum_sums.back();
     dt = (1.0 / _manager->_p_cum_sums.back()) * log(1 / r1);
     _index = _manager->find_upper_bound(r2);
 

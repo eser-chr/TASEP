@@ -6,11 +6,13 @@
 
 #include "bucket/bucket.h"
 #include "debug_utils.hpp"
+#include "rng.hpp"
 
 namespace fastTasep {
 template <typename T>
 class AbstractIteration {
    public:
+    using action_func = void (AbstractIteration<T>::*)(int);
     AbstractIteration(int L, int ITERS, T kon, T koff, T kstep, T q, T kq);
     virtual ~AbstractIteration() = default;
     void simulation();
@@ -26,14 +28,16 @@ class AbstractIteration {
     T kq;
     std::vector<T> propensities;
 
-    int ROWS, COLS;
+    int ROWS, COLS;  // Remove this and add them to the manager
     double Nactions_per_col;
     std::unique_ptr<bucket<T>> _manager;  // manages the cumsum effectively
     std::vector<uint8_t> grid;
 
-    std::random_device rd;
-    std::mt19937 gen;
-    std::uniform_real_distribution<T> dis;
+    // std::random_device rd;
+    // std::mt19937 gen;
+    // std::uniform_real_distribution<T> dis;
+
+    std::unique_ptr<BaseRNG<T>> _rng;
 
     int _action, _side, _index, temp;
     size_t _iter = 0;
@@ -49,7 +53,6 @@ class AbstractIteration {
     virtual void unbind(int side);
     virtual void step(int side);
     virtual void deactivate(int side);
-    using action_func = void (AbstractIteration<T>::*)(int);
 
     static const std::array<action_func, 4> actions;
 
@@ -62,14 +65,9 @@ class AbstractIteration {
     virtual void append_trajectory() = 0;
 };
 
-
 template <typename T>
 const std::array<typename AbstractIteration<T>::action_func, 4> AbstractIteration<T>::actions = {
-    &AbstractIteration<T>::bind,
-    &AbstractIteration<T>::unbind,
-    &AbstractIteration<T>::step,
-    &AbstractIteration<T>::deactivate
-};
-
+    &AbstractIteration<T>::bind, &AbstractIteration<T>::unbind, &AbstractIteration<T>::step,
+    &AbstractIteration<T>::deactivate};
 
 };  // namespace fastTasep
