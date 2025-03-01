@@ -1,5 +1,7 @@
 #include "derived.hpp"
 
+
+
 template <typename T>
 fastTasep::Neighbors<T>::Neighbors(int L, int ITERS, T kon, T koff, T kstep, T q, T kq)
     : AbstractIteration<T>(L, ITERS, kon, koff, kstep, q, kq), Left(L), Right(L) {}
@@ -41,6 +43,9 @@ void fastTasep::Neighbors<T>::bind(int side) {
 
 template <typename T>
 void fastTasep::Neighbors<T>::append_trajectory() {};
+
+
+
 
 template <typename T>
 py::tuple fastTasep::Neighbors<T>::export_python() {
