@@ -19,7 +19,7 @@ void fastTasep::BasicIteration<T>::append_trajectory() {
     std::copy(this->grid.begin() + this->l_ghost, this->grid.end() - this->r_ghost,
               DATA.begin() + this->_iter * this->L);
 
-    TIMES[this->_iter] = this->time;
+    TIMES[this->_iter] = this->_time;
 
 };
 

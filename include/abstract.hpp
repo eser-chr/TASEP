@@ -36,10 +36,9 @@ class AbstractIteration {
 
     std::unique_ptr<BaseRNG<T>> _rng;
 
-    int _action, _side, _index, temp;
+    int _action, _side, _index;
     size_t _iter = 0;
-    T r1, r2, dt;
-    T time = 0.0;
+    T _time = 0.0;
 
     enum ACTION { BIND = 0, UNBIND = 1, STEP = 2, DEACTIVATE = 3 };
     const int l_ghost = 1;

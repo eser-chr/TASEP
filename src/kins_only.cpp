@@ -10,7 +10,7 @@ fastTasep::CountKins<T>::CountKins(int L, int ITERS, T kon, T koff, T kstep, T q
 template <typename T>
 void fastTasep::CountKins<T>::append_trajectory() {
     KINS[this->_iter] = TOTAL_KINS;
-    TIMES[this->_iter] = this->time;
+    TIMES[this->_iter] = this->_time;
 };
 
 template<typename T>
