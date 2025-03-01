@@ -11,8 +11,6 @@ fastTasep::AbstractIteration<T>::AbstractIteration(int L, int ITERS, T kon, T ko
       q(q),
       kq(kq),
       _rng(std::make_unique<PCGRNG<T>>())
-//   gen(std::random_device{}()),
-//   dis(0.0, 1.0)
 {
     int total_size = 4 * (L + ghost);
     COLS = std::ceil(std::sqrt(total_size) / std::sqrt(2));
@@ -112,10 +110,7 @@ void fastTasep::AbstractIteration<T>::iteration() {
     T r = _rng->random();
     _time -= (1.0 / back) * log(r);
 
-    // r1 = _rng->random();
     r = _rng->random() * back;
-    // r2 *= back;
-    // dt = -(1.0 / back) * log(r1);
     _index = _manager->find_upper_bound(r);
 
     _action = _index & 3;
@@ -134,7 +129,6 @@ void fastTasep::AbstractIteration<T>::simulation() {
     while (_iter < ITERS) {
         append_trajectory();
         iteration();
-        // time += dt;
         _iter++;
     }
 }
