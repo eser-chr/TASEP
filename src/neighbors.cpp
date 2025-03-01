@@ -49,5 +49,11 @@ void fastTasep::Neighbors<T>::append_trajectory() {
 };
 
 
+template <typename T>
+py::tuple fastTasep::Neighbors<T>::export_python() {
+    return py::make_tuple(vector_to_numpy(std::move(NEIGHBORS)),
+                                        vector_to_numpy(std::move(TIMES)));
+}
+
 template class fastTasep::Neighbors<double>;
 template class fastTasep::Neighbors<float>;

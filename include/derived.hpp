@@ -15,29 +15,11 @@ template <typename T>
 class BasicIteration : public AbstractIteration<T> {
    public:
     BasicIteration(int L, int ITERS, T kon, T koff, T kstep, T q, T kq);
-    // BasicIteration(int L, int ITERS, T kon, T koff, T kstep, T q, T kq, MemoryPool* pool);
-
     std::vector<uint8_t> DATA;
-    // std::span<uint8_t> DATA;
     std::vector<T> TIMES;
-
-
-   private:
-    void append_trajectory();
-};
-template <typename T>
-class Profile : public AbstractIteration<T> {
-   public:
-    Profile(int L, int ITERS, T kon, T koff, T kstep, T q, T kq);
-
-    std::vector<uint64_t> DATA;
-    size_t iter_equil = 0;
-    T t_equil = 0.0;
-    T t_final = 0.0;
+    py::tuple export_python();
 
    private:
-    bool is_equil_set = false;
-    T T_equil();
     void append_trajectory();
 };
 
@@ -47,6 +29,7 @@ class CountKins : public AbstractIteration<T> {
     CountKins(int L, int ITERS, T kon, T koff, T kstep, T q, T kq);
     std::vector<uint16_t> KINS;
     std::vector<T> TIMES;
+    py::tuple export_python();
 
    private:
     uint16_t TOTAL_KINS = 0;
@@ -62,7 +45,7 @@ class Neighbors : public AbstractIteration<T> {
     Neighbors(int L, int ITERS, T kon, T koff, T kstep, T q, T kq);
     std::vector<int16_t> NEIGHBORS;
     std::vector<T> TIMES;
-
+    py::tuple export_python();
 
    private:
     int16_t RNN, LNN, rnn, lnn;
@@ -76,7 +59,7 @@ class NearestNeighbor : public AbstractIteration<T> {
     NearestNeighbor(int L, int ITERS, T kon, T koff, T kstep, T q, T kq);
     std::vector<int16_t> NEIGHBORS;
     std::vector<T> TIMES;
-
+    py::tuple export_python();
 
    private:
     int16_t NN, rnn, lnn;
@@ -85,3 +68,20 @@ class NearestNeighbor : public AbstractIteration<T> {
 };
 
 };  // end namespace fastTasep
+
+// template <typename T>
+// class Profile : public AbstractIteration<T> {
+//    public:
+//     Profile(int L, int ITERS, T kon, T koff, T kstep, T q, T kq);
+
+//     std::vector<uint64_t> DATA;
+//     size_t iter_equil = 0;
+//     T t_equil = 0.0;
+//     T t_final = 0.0;
+//         void export_python();
+
+//    private:
+//     bool is_equil_set = false;
+//     T T_equil();
+//     void append_trajectory();
+// };

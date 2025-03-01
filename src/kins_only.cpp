@@ -31,5 +31,13 @@ void fastTasep::CountKins<T>::step(int side){
   if(side == this->L)TOTAL_KINS--;
 }
 
+template <typename T>
+py::tuple fastTasep::CountKins<T>::export_python() {
+    return py::make_tuple(
+        vector_to_numpy(std::move(KINS)), 
+        vector_to_numpy(std::move(TIMES))
+    );
+}
+
 template class fastTasep::CountKins<double>;
 template class fastTasep::CountKins<float>;

@@ -5,43 +5,18 @@
 #ifdef TIME_ME
 
 template <typename T>
-// void new_iter_sim(int L, int ITERS, T kon, T koff, T kstep, T q, T kq) {
 py::tuple new_iter_sim(int L, int ITERS, T kon, T koff, T kstep, T q, T kq) {
     MyTimer timer;
-    // fastTasep::BasicIteration<T> sim(L, ITERS, kon, koff, kstep, q, kq);
-
-    // std::size_t mem_bytes = ((L + 3) * sizeof(char) + sizeof(T)) * ITERS;
-    // // mem_bytes+= ITERS* sizeof(T);
-    // void *memBlock = std::malloc(mem_bytes);
-    // // if (!memBlock) {
-    // //     std::throw << "Failed to allocate memory pool.\n";
-    // //     // return 1;
-    // // }
-    // uint8_t *DATA_ptr = static_cast<uint8_t*>(std::malloc(ITERS*L * sizeof(uint8_t)));
-    // py::capsule pool_capsule(DATA_ptr, [](void *m) { std::free(m); });
-
-    // MemoryPool pool(memBlock, mem_bytes);
     fastTasep::BasicIteration<T> sim(L, ITERS, kon, koff, kstep, q, kq);
     timer.add_lap();
     sim.simulation();
     timer.add_lap();
-
-    // auto array1 = vector_to_numpy(DATA_ptr, ITERS, L, pool_capsule);
-    // auto array2 = vector_to_numpy(std::move(sim.TIMES));
-    // auto array3 = vector_to_numpy(std::move(sim.ACTION));
-    // auto array4 = vector_to_numpy(std::move(sim.SIDE));
-    // pool_capsule); auto array3 = vector_to_numpy(std::move(sim.ACTION), /*rows*/ ITERS, /*cols*/
-    // 1, pool_capsule); auto array4 = vector_to_numpy(std::move(sim.SIDE), /*rows*/ ITERS, /*cols*/
-    // 1, pool_capsule);
 
     const auto &to_rtn = py::make_tuple(vector_to_numpy(std::move(sim.DATA), ITERS, L),
                                         vector_to_numpy(std::move(sim.TIMES)));
     timer.add_lap();
     timer.print_times();
 
-    // std::free(memBlock);
-
-    // return py::make_tuple(array1, array2, array3, array4);
     return to_rtn;
 }
 

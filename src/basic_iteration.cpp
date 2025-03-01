@@ -23,5 +23,13 @@ void fastTasep::BasicIteration<T>::append_trajectory() {
 
 };
 
+template <typename T>
+py::tuple fastTasep::BasicIteration<T>::export_python() {
+    return py::make_tuple(
+        vector_to_numpy(std::move(DATA), this->ITERS, this->L),
+        vector_to_numpy(std::move(TIMES)));
+}
+
+
 template class fastTasep::BasicIteration<float>;
 template class fastTasep::BasicIteration<double>;

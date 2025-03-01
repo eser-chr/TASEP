@@ -28,7 +28,6 @@ add_library(
     src/Bindings.cpp
     src/abstract.cpp
     src/basic_iteration.cpp
-    src/phase.cpp
     src/kins_only.cpp
     src/neighbors.cpp
     src/nneighbors.cpp

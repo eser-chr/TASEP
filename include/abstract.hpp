@@ -7,6 +7,7 @@
 #include "bucket/bucket.h"
 #include "debug_utils.hpp"
 #include "rng.hpp"
+#include "utils.hpp"
 
 namespace fastTasep {
 template <typename T>
@@ -33,10 +34,6 @@ class AbstractIteration {
     std::unique_ptr<bucket<T>> _manager;  // manages the cumsum effectively
     std::vector<uint8_t> grid;
 
-    // std::random_device rd;
-    // std::mt19937 gen;
-    // std::uniform_real_distribution<T> dis;
-
     std::unique_ptr<BaseRNG<T>> _rng;
 
     int _action, _side, _index, temp;
@@ -53,6 +50,7 @@ class AbstractIteration {
     virtual void unbind(int side);
     virtual void step(int side);
     virtual void deactivate(int side);
+    virtual py::tuple export_python()=0;
 
     static const std::array<action_func, 4> actions;
 
