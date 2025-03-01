@@ -50,4 +50,8 @@ PYBIND11_MODULE(tasep, m) {
           "Returns only the total number of kins");
     m.def("F_new_itersim", &runsim<fastTasep::BasicIteration, float>,
           "Returns only the total number of kins");
+    m.def("D_profile", &runsim<fastTasep::Profile, double>,
+          "Returns only the total number of kins");
+    m.def("F_profile", &runsim<fastTasep::Profile, float>,
+          "Returns only the total number of kins");
 }

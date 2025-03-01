@@ -10,16 +10,16 @@ fastTasep::AbstractIteration<T>::AbstractIteration(int L, int ITERS, T kon, T ko
       kstep(kstep),
       q(q),
       kq(kq),
-      _rng(std::make_unique<PCGRNG<T>>())
-{
+      _rng(std::make_unique<PCGRNG<T>>()) {
+    grid.resize(L + ghost, 0);
+
     int total_size = 4 * (L + ghost);
     COLS = std::ceil(std::sqrt(total_size) / std::sqrt(2));
     ROWS = total_size / COLS + 2;
     Nactions_per_col = static_cast<double>(N_actions) / COLS;
 
-    grid.resize(L + ghost, 0);
     propensities.resize(ROWS * COLS, 0.0);
-
+    
     for (int i = l_ghost * N_actions + BIND; i < (l_ghost + L) * N_actions; i += N_actions) {
         propensities[i] = kon;
     }
@@ -108,7 +108,8 @@ template <typename T>
 void fastTasep::AbstractIteration<T>::iteration() {
     T back = _manager->_p_cum_sums.back();
     T r = _rng->random();
-    _time -= (1.0 / back) * log(r);
+    dt = -(1.0 / back) * log(r);
+    _time += dt;
 
     r = _rng->random() * back;
     _index = _manager->find_upper_bound(r);

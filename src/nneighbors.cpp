@@ -7,28 +7,30 @@ fastTasep::NearestNeighbor<T>::NearestNeighbor(int L, int ITERS, T kon, T koff, 
 template <typename T>
 void fastTasep::NearestNeighbor<T>::bind(int side) {
     AbstractIteration<T>::bind(side);
-    bool isleft = false;
-    bool isright = false;
-    uint16_t lnn = side - 1;
-    uint16_t rnn = side + 1;
+    if (this->_time > this->Tequil) {
+        bool isleft = false;
+        bool isright = false;
+        uint16_t lnn = side - 1;
+        uint16_t rnn = side + 1;
 
-    while (lnn > this->l_ghost && rnn < this->L + this->r_ghost) {
-        if (this->grid[lnn]) {
-            isleft = true;
-            break;
-        };
-        if (this->grid[rnn]) {
-            isright = true;
-            break;
-        };
+        while (lnn > this->l_ghost && rnn < this->L + this->r_ghost) {
+            if (this->grid[lnn]) {
+                isleft = true;
+                break;
+            };
+            if (this->grid[rnn]) {
+                isright = true;
+                break;
+            };
 
-        lnn--;
-        rnn++;
+            lnn--;
+            rnn++;
+        }
+        if (isleft)
+            NEIGHBORS[side - lnn]++;
+        else if (isright)
+            NEIGHBORS[rnn - side]++;
     }
-    if (isleft)
-        NEIGHBORS[side - lnn]++;
-    else if (isright)
-        NEIGHBORS[rnn - side]++;
 }
 
 template <typename T>

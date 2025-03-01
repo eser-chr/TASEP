@@ -8,32 +8,34 @@ template <typename T>
 void fastTasep::Neighbors<T>::bind(int side) {
     AbstractIteration<T>::bind(side);
 
-    bool isleft = false;
-    bool isright = false;
+    if (this->_time > this->Tequil) {
+        bool isleft = false;
+        bool isright = false;
 
-    uint16_t lnn = (side - 1);
-    uint16_t rnn = (side + 1);
+        uint16_t lnn = (side - 1);
+        uint16_t rnn = (side + 1);
 
-    while (lnn > this->l_ghost) {
-        if (this->grid[lnn]) {
-            isleft = true;
-            break;
+        while (lnn > this->l_ghost) {
+            if (this->grid[lnn]) {
+                isleft = true;
+                break;
+            }
+            lnn--;
         }
-        lnn--;
-    }
 
-    while (rnn < this->L + this->r_ghost) {
-        if (this->grid[rnn]) {
-            isright = true;
-            break;
+        while (rnn < this->L + this->r_ghost) {
+            if (this->grid[rnn]) {
+                isright = true;
+                break;
+            }
+            rnn++;
         }
-        rnn++;
-    }
-    if (isleft && isright) {
-        ASSERT(LNN < 0, "LNN out of boundaries");
-        ASSERT(RNN > 0, "RNN out of boundaries");
-        Left[side - lnn]++;
-        Right[rnn - side]++;
+        if (isleft && isright) {
+            ASSERT(LNN < 0, "LNN out of boundaries");
+            ASSERT(RNN > 0, "RNN out of boundaries");
+            Left[side - lnn]++;
+            Right[rnn - side]++;
+        }
     }
 }
 

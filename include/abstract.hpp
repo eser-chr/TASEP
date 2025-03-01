@@ -39,6 +39,8 @@ class AbstractIteration {
     int _action, _side, _index;
     size_t _iter = 0;
     T _time = 0.0;
+    T dt = 0.0;
+    T Tequil = 6 / (kon + koff);
 
     enum ACTION { BIND = 0, UNBIND = 1, STEP = 2, DEACTIVATE = 3 };
     const int l_ghost = 1;
@@ -49,7 +51,7 @@ class AbstractIteration {
     virtual void unbind(int side);
     virtual void step(int side);
     virtual void deactivate(int side);
-    virtual py::tuple export_python()=0;
+    virtual py::tuple export_python() = 0;
 
     static const std::array<action_func, 4> actions;
 

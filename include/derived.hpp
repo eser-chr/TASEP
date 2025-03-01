@@ -64,21 +64,17 @@ class NearestNeighbor : public AbstractIteration<T> {
     void append_trajectory();
 };
 
+template <typename T>
+class Profile : public AbstractIteration<T> {
+   public:
+    Profile(int L, int ITERS, T kon, T koff, T kstep, T q, T kq);
+
+    std::vector<double> DATA;
+    T ttotal = 0.0;
+    py::tuple export_python();
+
+   private:
+    void append_trajectory();
+};
+
 };  // end namespace fastTasep
-
-// template <typename T>
-// class Profile : public AbstractIteration<T> {
-//    public:
-//     Profile(int L, int ITERS, T kon, T koff, T kstep, T q, T kq);
-
-//     std::vector<uint64_t> DATA;
-//     size_t iter_equil = 0;
-//     T t_equil = 0.0;
-//     T t_final = 0.0;
-//         void export_python();
-
-//    private:
-//     bool is_equil_set = false;
-//     T T_equil();
-//     void append_trajectory();
-// };
