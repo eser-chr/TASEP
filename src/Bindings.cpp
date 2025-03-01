@@ -34,9 +34,8 @@ py::tuple new_iter_sim(int L, int ITERS, T kon, T koff, T kstep, T q, T kq) {
     // 1, pool_capsule); auto array4 = vector_to_numpy(std::move(sim.SIDE), /*rows*/ ITERS, /*cols*/
     // 1, pool_capsule);
 
-    const auto &to_rtn = py::make_tuple(
-        vector_to_numpy(std::move(sim.DATA), ITERS, L), vector_to_numpy(std::move(sim.TIMES)),
-        vector_to_numpy(std::move(sim.ACTION)), vector_to_numpy(std::move(sim.SIDE)));
+    const auto &to_rtn = py::make_tuple(vector_to_numpy(std::move(sim.DATA), ITERS, L),
+                                        vector_to_numpy(std::move(sim.TIMES)));
     timer.add_lap();
     timer.print_times();
 
@@ -71,9 +70,8 @@ py::tuple neighbors_sim(int L, int ITERS, T kon, T koff, T kstep, T q, T kq) {
     sim.simulation();
     timer.add_lap();
 
-    const auto &to_rtn = py::make_tuple(
-        vector_to_numpy(std::move(sim.NEIGHBORS)), vector_to_numpy(std::move(sim.TIMES)),
-        vector_to_numpy(std::move(sim.ACTION)), vector_to_numpy(std::move(sim.SIDE)));
+    const auto &to_rtn = py::make_tuple(vector_to_numpy(std::move(sim.NEIGHBORS)),
+                                        vector_to_numpy(std::move(sim.TIMES)));
     timer.add_lap();
     timer.print_times();
 
@@ -89,9 +87,8 @@ py::tuple nneighbors_sim(int L, int ITERS, T kon, T koff, T kstep, T q, T kq) {
     sim.simulation();
     timer.add_lap();
 
-    const auto &to_rtn = py::make_tuple(
-        vector_to_numpy(std::move(sim.NEIGHBORS)), vector_to_numpy(std::move(sim.TIMES)),
-        vector_to_numpy(std::move(sim.ACTION)), vector_to_numpy(std::move(sim.SIDE)));
+    const auto &to_rtn = py::make_tuple(vector_to_numpy(std::move(sim.NEIGHBORS)),
+                                        vector_to_numpy(std::move(sim.TIMES)));
     timer.add_lap();
     timer.print_times();
     return to_rtn;

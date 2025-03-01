@@ -20,8 +20,7 @@ class BasicIteration : public AbstractIteration<T> {
     std::vector<uint8_t> DATA;
     // std::span<uint8_t> DATA;
     std::vector<T> TIMES;
-    std::vector<uint8_t> ACTION;
-    std::vector<uint16_t> SIDE;
+
 
    private:
     void append_trajectory();
@@ -63,8 +62,7 @@ class Neighbors : public AbstractIteration<T> {
     Neighbors(int L, int ITERS, T kon, T koff, T kstep, T q, T kq);
     std::vector<int16_t> NEIGHBORS;
     std::vector<T> TIMES;
-    std::vector<uint8_t> ACTION;
-    std::vector<uint16_t> SIDE;
+
 
    private:
     int16_t RNN, LNN, rnn, lnn;
@@ -78,8 +76,7 @@ class NearestNeighbor : public AbstractIteration<T> {
     NearestNeighbor(int L, int ITERS, T kon, T koff, T kstep, T q, T kq);
     std::vector<int16_t> NEIGHBORS;
     std::vector<T> TIMES;
-    std::vector<uint8_t> ACTION;
-    std::vector<uint16_t> SIDE;
+
 
    private:
     int16_t NN, rnn, lnn;

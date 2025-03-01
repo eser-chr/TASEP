@@ -6,8 +6,6 @@ fastTasep::NearestNeighbor<T>::NearestNeighbor(int L, int ITERS, T kon, T koff, 
     : AbstractIteration<T>(L, ITERS, kon, koff, kstep, q, kq) {
     NEIGHBORS.reserve(ITERS);
     TIMES.resize(ITERS);
-    ACTION.resize(ITERS);
-    SIDE.resize(ITERS);
 }
 
 template <typename T>
@@ -37,8 +35,7 @@ void fastTasep::NearestNeighbor<T>::bind(int side) {
 template <typename T>
 void fastTasep::NearestNeighbor<T>::append_trajectory() {
     TIMES[this->_iter] = this->time;
-    ACTION[this->_iter] = this->_action;
-    SIDE[this->_iter] = this->_side;
+
 };
 
 
