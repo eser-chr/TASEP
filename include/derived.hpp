@@ -8,7 +8,6 @@
 #include "abstract.hpp"
 #include "bucket/bucket.h"
 #include "debug_utils.hpp"
-#include "memory_pool.hpp"
 
 namespace fastTasep {
 

@@ -27,10 +27,11 @@ add_library(
     tasep MODULE
     src/Bindings.cpp
     src/abstract.cpp
-    src/full.cpp
+    src/basic_iteration.cpp
     src/phase.cpp
     src/kins_only.cpp
     src/neighbors.cpp
+    src/nneighbors.cpp
 )
 
 # add_library(

@@ -1,11 +1,4 @@
-// #include <memory>
-#include <cstdlib>
-// #include <cstdint>
-// #include <new>
-#include <cstddef>
-
 #include "derived.hpp"
-#include "memory_pool.hpp"
 #include "timer.hpp"
 #include "utils.hpp"
 

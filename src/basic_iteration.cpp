@@ -2,21 +2,6 @@
 
 #include "derived.hpp"
 
-// template <typename T>
-// fastTasep::BasicIteration<T>::BasicIteration(int L, int ITERS, T kon, T koff, T kstep, T q, T kq,
-//                                              MemoryPool* pool)
-//     : AbstractIteration<T>(L, ITERS, kon, koff, kstep, q, kq),
-//       DATA(PoolAllocator<uint8_t>(pool)),
-//       TIMES(PoolAllocator<T>(pool)),
-//       ACTION(PoolAllocator<uint8_t>(pool)),
-//       SIDE(PoolAllocator<uint16_t>(pool)) {
-//     DATA.reserve(L * ITERS);
-//     TIMES.resize(ITERS);
-//     ACTION.resize(ITERS);
-//     SIDE.resize(ITERS);
-//     // std::cout<<DATA.size()<<std::endl;
-
-// }
 
 template <typename T>
 fastTasep::BasicIteration<T>::BasicIteration(int L, int ITERS, T kon, T koff, T kstep, T q, T kq)
