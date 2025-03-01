@@ -43,12 +43,11 @@ template <typename T>
 class Neighbors : public AbstractIteration<T> {
    public:
     Neighbors(int L, int ITERS, T kon, T koff, T kstep, T q, T kq);
-    std::vector<int16_t> NEIGHBORS;
-    std::vector<T> TIMES;
+    std::vector<uint16_t> Left;
+    std::vector<uint16_t> Right;
     py::tuple export_python();
 
    private:
-    int16_t RNN, LNN, rnn, lnn;
     void bind(int side) override;
     void append_trajectory();
 };
@@ -57,12 +56,10 @@ template <typename T>
 class NearestNeighbor : public AbstractIteration<T> {
    public:
     NearestNeighbor(int L, int ITERS, T kon, T koff, T kstep, T q, T kq);
-    std::vector<int16_t> NEIGHBORS;
-    std::vector<T> TIMES;
+    std::vector<uint16_t> NEIGHBORS;
     py::tuple export_python();
 
    private:
-    int16_t NN, rnn, lnn;
     void bind(int side) override;
     void append_trajectory();
 };

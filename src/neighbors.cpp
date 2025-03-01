@@ -2,25 +2,21 @@
 
 template <typename T>
 fastTasep::Neighbors<T>::Neighbors(int L, int ITERS, T kon, T koff, T kstep, T q, T kq)
-    : AbstractIteration<T>(L, ITERS, kon, koff, kstep, q, kq) {
-    NEIGHBORS.reserve(2 * ITERS);
-    TIMES.resize(ITERS);
-}
-
-
-
+    : AbstractIteration<T>(L, ITERS, kon, koff, kstep, q, kq), Left(L), Right(L) {}
 
 template <typename T>
 void fastTasep::Neighbors<T>::bind(int side) {
     AbstractIteration<T>::bind(side);
-    RNN = 0;
-    LNN = 0;
-    lnn = (side - 1);
-    rnn = (side + 1);
+
+    bool isleft = false;
+    bool isright = false;
+
+    uint16_t lnn = (side - 1);
+    uint16_t rnn = (side + 1);
 
     while (lnn > this->l_ghost) {
         if (this->grid[lnn]) {
-            LNN = lnn - side;
+            isleft = true;
             break;
         }
         lnn--;
@@ -28,31 +24,25 @@ void fastTasep::Neighbors<T>::bind(int side) {
 
     while (rnn < this->L + this->r_ghost) {
         if (this->grid[rnn]) {
-            RNN = rnn - side;
+            isright = true;
             break;
         }
         rnn++;
     }
-    if (LNN != 0 && RNN != 0) {
+    if (isleft && isright) {
         ASSERT(LNN < 0, "LNN out of boundaries");
         ASSERT(RNN > 0, "RNN out of boundaries");
-        this->NEIGHBORS.push_back(LNN);
-        this->NEIGHBORS.push_back(RNN);
+        Left[side - lnn]++;
+        Right[rnn - side]++;
     }
 }
 
-
-
 template <typename T>
-void fastTasep::Neighbors<T>::append_trajectory() {
-    TIMES[this->_iter] = this->time;
-};
-
+void fastTasep::Neighbors<T>::append_trajectory() {};
 
 template <typename T>
 py::tuple fastTasep::Neighbors<T>::export_python() {
-    return py::make_tuple(vector_to_numpy(std::move(NEIGHBORS)),
-                                        vector_to_numpy(std::move(TIMES)));
+    return py::make_tuple(vector_to_numpy(std::move(Left)), vector_to_numpy(std::move(Right)));
 }
 
 template class fastTasep::Neighbors<double>;
