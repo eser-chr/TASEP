@@ -1,9 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"/home/chris/Desktop/TASEP/_skbuild/linux-x86_64-3.12/cmake-build/cmake_install.cmake",
-		"/home/chris/Desktop/TASEP/_skbuild/linux-x86_64-3.12/cmake-build/external/pcg/cmake_install.cmake",
-		"/home/chris/Desktop/TASEP/_skbuild/linux-x86_64-3.12/cmake-build/external/bucket/cmake_install.cmake"
-	],
-	"Parallel" : false
-}
