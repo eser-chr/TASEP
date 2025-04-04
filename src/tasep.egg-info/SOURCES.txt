@@ -1,0 +1,8 @@
+pyproject.toml
+setup.py
+_skbuild/linux-x86_64-3.12/cmake-install/tasep.so
+src/tasep.egg-info/PKG-INFO
+src/tasep.egg-info/SOURCES.txt
+src/tasep.egg-info/dependency_links.txt
+src/tasep.egg-info/not-zip-safe
+src/tasep.egg-info/top_level.txt
